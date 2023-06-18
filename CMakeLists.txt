@@ -12,7 +12,7 @@ endif()
 project ("AccelerateMVCC")
 
 # Add source to this project's executable.
-add_executable (AccelerateMVCC "main.cpp"  "include/accelerateMVCC.h" "include/trxManager.cpp")
+add_executable (AccelerateMVCC "main.cpp"  "include/accelerateMVCC.h" "include/trxManager.cpp" "include/epochList.h" "include/epochList.cpp" "include/node.h" "include/node.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET AccelerateMVCC PROPERTY CXX_STANDARD 20)

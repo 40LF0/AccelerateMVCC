@@ -17,12 +17,12 @@ namespace acmvcc
 
     bool TrxManager::commitTrx(uint64_t trxId)
     {
-        return true;
+        return false;
     }
 
     bool TrxManager::rollBackTrx(uint64_t trxId)
     {
-        return true;
+        return false;
     }
 
 

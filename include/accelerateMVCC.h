@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cstdint>
+#include "epochList.h"
 #include "trxManager.h"
 
 namespace acmvcc
