@@ -1,0 +1,3 @@
+C:/Users/wjdac/source/repos/AccelerateMVCC/build/CMakeFiles/AccelerateMVCC.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/build/CMakeFiles/ZERO_CHECK.dir
