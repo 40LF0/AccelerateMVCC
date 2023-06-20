@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\wjdac\source\repos\AccelerateMVCC\Kuku\src\kuku\internal\blake2b.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\wjdac\source\repos\AccelerateMVCC\Kuku\src\kuku\internal\blake2xb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\wjdac\source\repos\AccelerateMVCC\Kuku\src\kuku\kuku.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\wjdac\source\repos\AccelerateMVCC\Kuku\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{342A711A-8A64-3F0C-A194-8DF7D6F57F8A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

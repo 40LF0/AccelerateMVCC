@@ -1,0 +1,5 @@
+C:/Users/wjdac/source/repos/AccelerateMVCC/Kuku/build/CMakeFiles/kuku.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/Kuku/build/CMakeFiles/INSTALL.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/Kuku/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/Kuku/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/wjdac/source/repos/AccelerateMVCC/Kuku/build/src/kuku/CMakeFiles/INSTALL.dir
