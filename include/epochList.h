@@ -1,3 +1,6 @@
+// Licensed under the MIT license.
+#pragma once
+
 #include <cstdint>
 #include <atomic>
 #include "node.h"
@@ -11,7 +14,7 @@ namespace acmvcc
     class EpochList {
     public:
 
-        EpochList(uint64_t epochSize, uint64_t firstTrxId);
+        EpochList(uint64_t firstTrxId);
 
         bool search(uint64_t trxId);
 

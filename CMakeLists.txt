@@ -13,15 +13,15 @@ project ("AccelerateMVCC")
 # Add source to this project's executable.
 add_executable (AccelerateMVCC
   "main.cpp"
-  "include/accelerateMVCC.h"
+  "include/accelerateMvcc.h"
   "include/trxManager.cpp"
   "include/epochList.h"
   "include/epochList.cpp"
   "include/node.h"
   "include/node.cpp"
-)
+ "include/common.h")
 
-# Add the directory containing kuku.h and common.h to the include directories
+# Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
 target_include_directories(AccelerateMVCC
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/src
 )
