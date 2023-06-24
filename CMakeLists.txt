@@ -19,7 +19,9 @@ add_executable (AccelerateMVCC
   "include/epochList.cpp"
   "include/node.h"
   "include/node.cpp"
- "include/common.h")
+ "include/common.h"
+ )
+
 
 # Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
 target_include_directories(AccelerateMVCC
