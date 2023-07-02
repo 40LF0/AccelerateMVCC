@@ -41,6 +41,7 @@ namespace acmvcc
 		newNode->spaceId = spaceId;
 		newNode->pageId = pageId;
 		newNode->offset = offset;
+		bool result;
 		while (1)
 		{
 			while (next->trxId >= trxId)
@@ -52,8 +53,12 @@ namespace acmvcc
 			if (curr->trxId == trxId) return -1;		
 
 			newNode->next = curr->next;
-			bool result = __sync_val_compare_and_swap((unsigned long long *)&(curr->next),
-										(unsigned long long)(next), (unsigned long long)(newNode));
+			if (sizeof(int *) == 4)
+				result = __sync_val_compare_and_swap((unsigned int *)&(curr->next),
+														  (unsigned int)(next), (unsigned int)(newNode));
+			else
+				result = __sync_val_compare_and_swap((unsigned long long *)&(curr->next),
+														  (unsigned long long)(next), (unsigned long long)(newNode));
 			if (result) return 0;
 
 			next = curr->next;
