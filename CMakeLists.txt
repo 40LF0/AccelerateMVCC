@@ -20,6 +20,13 @@ add_executable (AccelerateMVCC
   "include/node.h"
   "include/node.cpp"
  "include/common.h"
+  "include/dead0dead.h" 
+ "include/read0read.h" 
+ "include/read0types.h" 
+ "include/ut0lst.h"
+ "include/dead0dead.cpp" 
+ "include/read0read.cpp" 
+ "include/read0types.cpp" 
  )
 
 
