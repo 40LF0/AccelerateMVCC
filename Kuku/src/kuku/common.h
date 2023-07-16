@@ -28,7 +28,7 @@ namespace kuku
     /**
     The type that represents a 128-bit item that can be added to the hash table.
     */
-    using item_type = std::array<unsigned char, 16>;
+    using item_type = std::array<unsigned char, 24>;
 
     /**
     The type that represents a location in the hash table.
@@ -104,6 +104,33 @@ namespace kuku
     {
         return *reinterpret_cast<const std::uint64_t*>(item.data() + 8);
     }
+    
+    /**
+    Return a reference to the value of the item.
+    */
+    inline std::uint64_t &get_value(item_type &item)
+    {
+        return *reinterpret_cast<std::uint64_t*>(item.data() + 16);
+    }
+
+    /**
+    Return a reference to the value of the item.
+    */
+    inline std::uint64_t get_value(const item_type &item)
+    {
+        return *reinterpret_cast<const std::uint64_t*>(item.data() + 16);
+    }
+    
+    /**
+    Sets the value of a given hash table item from a pair of two 64-bit words.
+    @param[in] value The 64 bits of the value of the item
+    @param[out] destination The hash table item whose value is to be set
+    */
+    inline void set_value(std::uint64_t value, item_type &destination) noexcept
+    {
+        get_value(destination) = value;
+    }
+
 
     /**
     Sets the value of a given hash table item from a given buffer.

@@ -46,6 +46,7 @@ int main()
 	KukuTable table(table_size, stash_size, loc_func_count, loc_func_seed, max_probe, empty_item);
 
 	item_type item1 = make_item(100, 101);
+	set_value(50, item1);
 
 
 	if (table.insert(item1)) {
@@ -56,7 +57,7 @@ int main()
 	}
 
 
-	QueryResult result = table.query(make_item(0, 101));
+	QueryResult result = table.query(make_item(100,101));
 
 	QueryResult res = result;
 	cout << "Found: " << boolalpha << !!res << endl;
@@ -72,11 +73,9 @@ int main()
 	else {
 		std::cout << "Item not found." << std::endl;
 	}
-	table.all_locations(make_item(100, 1));
-	std::cout << table.all_locations(make_item(100, 1)).size() << std::endl;
-	std::cout << get_low_word(table.table(result.location())) << std::endl;
-	std::cout << get_high_word(table.table(result.location()))  << std::endl;
-	print_table(table);
+	std::cout << get_value(table.table(result.location())) << std::endl;
+
+
 
 
 	cout << "Hello CMake." << endl;
