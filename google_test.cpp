@@ -4,14 +4,6 @@
 using namespace std;
 using namespace kuku;
 
-//// demonstrate some basic assertions.
-//Test(hellotest, basicassertions) {
-//	// expect two strings not to be equal.
-//	expect_strne("hello", "world");
-//	// expect equality.
-//	expect_eq(7 * 6, 42);
-//}
-
 TEST(CommonTests, SetItem)
 {
     item_type bl;

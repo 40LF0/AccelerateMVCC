@@ -4,7 +4,7 @@
 #include <cstdint>
 namespace acmvcc
 {
-	uint64_t EPOCH_SIZE = 5;
+	uint64_t EPOCH_SIZE = 100;
 
 } // namespace acmvcc
 

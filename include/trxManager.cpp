@@ -4,9 +4,9 @@
 
 namespace acmvcc
 {
-    TrxManager::TrxManager(uint64_t epochSize)
+    TrxManager::TrxManager(uint64_t record_count)
     {
-        this->epochSize = epochSize;
+        this->record_count = record_count;
     }
 
     uint64_t TrxManager::startTrx()

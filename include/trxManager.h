@@ -14,7 +14,7 @@ namespace acmvcc
     class TrxManager
     {
     public:
-        TrxManager(uint64_t epochSize);
+        TrxManager(uint64_t record_count);
 
         uint64_t startTrx();
 
@@ -24,8 +24,8 @@ namespace acmvcc
 
     private:
         std::atomic<uint64_t> AtomicNextTrxId = 0;
-
-        uint64_t epochSize;
+        // The record_count represent the number of records saved in the hash table
+        uint64_t record_count;
     };
 
 

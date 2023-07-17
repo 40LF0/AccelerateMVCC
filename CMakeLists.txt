@@ -16,6 +16,7 @@ project ("AccelerateMVCC")
 # Common source files
 set(COMMON_SOURCES
   "include/accelerateMvcc.h"
+  "include/accelerateMvcc.cpp"
   "include/trxManager.cpp"
   "include/epochList.h"
   "include/epochList.cpp"

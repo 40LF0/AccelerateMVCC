@@ -1,6 +1,5 @@
 ﻿// main.cpp : Defines the entry point for the application.
-//
-#include <iostream>
+
 #include "include/accelerateMvcc.h"
 #include <chrono>
 #include <iomanip>
