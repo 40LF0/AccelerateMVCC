@@ -13,10 +13,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project ("AccelerateMVCC")
-
-# Add source to this project's executable.
-add_executable (AccelerateMVCC
-  "main.cpp"
+# Common source files
+set(COMMON_SOURCES
   "include/accelerateMvcc.h"
   "include/trxManager.cpp"
   "include/epochList.h"
@@ -24,13 +22,18 @@ add_executable (AccelerateMVCC
   "include/node.h"
   "include/node.cpp"
   "include/common.h"
-  "include/dead0dead.h" 
-  "include/read0read.h" 
-  "include/read0types.h" 
+  "include/dead0dead.h"
+  "include/read0read.h"
+  "include/read0types.h"
   "include/ut0lst.h"
-  "include/dead0dead.cpp" 
-  "include/read0read.cpp" 
-  "include/read0types.cpp" 
+  "include/dead0dead.cpp"
+  "include/read0read.cpp"
+  "include/read0types.cpp"
+)
+# Add source to this project's executable.
+add_executable (AccelerateMVCC
+  "main.cpp"
+  ${COMMON_SOURCES}
  )
 
 
@@ -61,26 +64,13 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(
-  hello_test
-  "hello_test.cpp"
-  "include/accelerateMvcc.h"
-  "include/trxManager.cpp"
-  "include/epochList.h"
-  "include/epochList.cpp"
-  "include/node.h"
-  "include/node.cpp"
-  "include/common.h"
-  "include/dead0dead.h" 
-  "include/read0read.h" 
-  "include/read0types.h" 
-  "include/ut0lst.h"
-  "include/dead0dead.cpp" 
-  "include/read0read.cpp" 
-  "include/read0types.cpp" 
+  test_with_google
+  "google_test.cpp"
+  ${COMMON_SOURCES} 
 )
 
 # Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
-target_include_directories(hello_test
+target_include_directories(test_with_google
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/src
 )
 
@@ -89,13 +79,13 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 
 # Link the kuku.lib library
-target_link_libraries(hello_test
+target_link_libraries(test_with_google
   ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/build/lib/Debug/kuku-2.1.lib
 )
 target_link_libraries(
-  hello_test
+  test_with_google
   GTest::gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(test_with_google)
