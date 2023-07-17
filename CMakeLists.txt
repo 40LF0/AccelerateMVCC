@@ -1,6 +1,6 @@
-﻿cmake_minimum_required(VERSION 3.14)
-
-project(AccelerateMVCC)
+﻿# CMakeList.txt : CMake project for AccelerateMVCC, include source and define
+# project specific logic here.
+cmake_minimum_required(VERSION 3.14)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -12,8 +12,10 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Common source files
-set(COMMON_SOURCES
+project ("AccelerateMVCC")
+
+# Add source to this project's executable.
+add_executable (AccelerateMVCC
   "main.cpp"
   "include/accelerateMvcc.h"
   "include/trxManager.cpp"
@@ -22,19 +24,17 @@ set(COMMON_SOURCES
   "include/node.h"
   "include/node.cpp"
   "include/common.h"
-  "include/dead0dead.h"
-  "include/read0read.h"
-  "include/read0types.h"
+  "include/dead0dead.h" 
+  "include/read0read.h" 
+  "include/read0types.h" 
   "include/ut0lst.h"
-  "include/dead0dead.cpp"
-  "include/read0read.cpp"
-  "include/read0types.cpp"
-)
+  "include/dead0dead.cpp" 
+  "include/read0read.cpp" 
+  "include/read0types.cpp" 
+ )
 
-# Executable target
-add_executable(AccelerateMVCC ${COMMON_SOURCES})
 
-# Include directories
+# Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
 target_include_directories(AccelerateMVCC
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/src
 )
@@ -43,12 +43,12 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET AccelerateMVCC PROPERTY CXX_STANDARD 20)
 endif()
 
-# Link libraries
+# Link the kuku.lib library
 target_link_libraries(AccelerateMVCC
   ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/build/lib/Debug/kuku-2.1.lib
 )
 
-# Tests
+# TODO: Add tests and install targets if needed.
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -60,21 +60,40 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-# Test executable target
-add_executable(hello_test ${COMMON_SOURCES} "hello_test.cpp")
+add_executable(
+  hello_test
+  "hello_test.cpp"
+  "include/accelerateMvcc.h"
+  "include/trxManager.cpp"
+  "include/epochList.h"
+  "include/epochList.cpp"
+  "include/node.h"
+  "include/node.cpp"
+  "include/common.h"
+  "include/dead0dead.h" 
+  "include/read0read.h" 
+  "include/read0types.h" 
+  "include/ut0lst.h"
+  "include/dead0dead.cpp" 
+  "include/read0read.cpp" 
+  "include/read0types.cpp" 
+)
 
-# Include directories for test target
+# Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
 target_include_directories(hello_test
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/src
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET hello_test PROPERTY CXX_STANDARD 20)
+  set_property(TARGET AccelerateMVCC PROPERTY CXX_STANDARD 20)
 endif()
 
-# Link libraries for test target
+# Link the kuku.lib library
 target_link_libraries(hello_test
   ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/build/lib/Debug/kuku-2.1.lib
+)
+target_link_libraries(
+  hello_test
   GTest::gtest_main
 )
 
