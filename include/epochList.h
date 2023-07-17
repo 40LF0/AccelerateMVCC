@@ -26,7 +26,4 @@ namespace acmvcc
 
     };
 
-
-
-
 } // namespace acmvcc
