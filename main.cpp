@@ -81,6 +81,7 @@ int main()
 
 	trxManagerTest();
 
+	acmvcc::AccelerateMvcc mvcc(10);
 
 
 	return 0;
