@@ -5,8 +5,8 @@
 acmvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 {
 	// if you are willing to test large number of elements, you have to change table size : (1 << 10) + 1 to (1 << 16)
-	kuku_table = new kuku::KukuTable((1 << 10), 0, 2, kuku::make_zero_item(), 100, kuku::make_random_item());
-	// kukuTable = new kuku::KukuTable((1 << 16), 0, 2, kuku::make_zero_item(), 100, kuku::make_random_item());
+	kuku_table = new kuku::KukuTable((1 << 10), (1 << 10), 2, kuku::make_zero_item(), 100, kuku::make_random_item());
+	// kukuTable = new kuku::KukuTable((1 << 16), (1 << 10), 2, kuku::make_zero_item(), 100, kuku::make_random_item());
 	trxManger = new Trx_manager(record_count); 
 
 	for (int i = 0; i < record_count; i++) {
