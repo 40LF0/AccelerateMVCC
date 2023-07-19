@@ -45,7 +45,7 @@ namespace acmvcc{
 		uint64_t min_trx_id;
 		uint64_t max_trx_id;
 		uint64_t count;
-		undo_entry_node* next_entry;
+		std::atomic<undo_entry_node*> next_entry;
 		std::atomic<epoch_node*> next;
 
 		epoch_node(uint64_t epoch_num, uint64_t trx_id, undo_entry_node* next_entry, epoch_node* next)

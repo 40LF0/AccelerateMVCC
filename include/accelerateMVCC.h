@@ -32,9 +32,16 @@ namespace acmvcc
 
         bool insert(uint64_t table_id, uint64_t index, uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset);
 
+        bool search(uint64_t table_id, uint64_t index,
+            uint64_t trx_id, uint64_t& space_id, uint64_t& page_id, uint64_t& offset,
+            std::vector<uint64_t> active_trx_list
+            );
+
         uint64_t get_epoch_num(uint64_t trx_id) {
             return trx_id / 100;
         }
+
+
     private:
         /**
         The kukuTable represents a cockoo hash table. It includes information about the location functions (hash
