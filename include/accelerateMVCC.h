@@ -13,35 +13,40 @@ namespace acmvcc
     The AccelerateMvcc class represents a entire in-memory structure for accelerating MVCC. 
     It includes HashTable, HashResult, EpochList, and TrxManager.
     */
-    class AccelerateMvcc;
+    class Accelerate_mvcc;
 
     /**
     The TrxManager class represents mimc version of transaction manager in DBMS
     It should mange transaction id and classify which epoch is active or not.
     */
-    class TrxManager;
+    class Trx_manager;
 
     /**
     The AccelerateMvcc class represents a entire in-memory structure for accelerating MVCC.
     It includes HashTable, HashResult, EpochList, and TrxManager.
     */
-    class AccelerateMvcc {
+    class Accelerate_mvcc {
 
     public:
-        AccelerateMvcc(uint64_t record_count);
+        Accelerate_mvcc(uint64_t record_count);
 
+        bool insert(uint64_t table_id, uint64_t index, uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset);
+
+        uint64_t get_epoch_num(uint64_t trx_id) {
+            return trx_id / 100;
+        }
     private:
         /**
         The kukuTable represents a cockoo hash table. It includes information about the location functions (hash
         functions) and holds the items inserted into the table.
         */
-        kuku::KukuTable* kukuTable;
+        kuku::KukuTable* kuku_table;
 
         /**
         The trxManager represents mimc version of transaction manager in DBMS
         It should mange transaction id and classify which epoch is active or not.
         */
-        TrxManager* trxManger;
+        Trx_manager* trxManger;
 
     };
 

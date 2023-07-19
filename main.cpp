@@ -81,14 +81,14 @@ int main()
 
 	trxManagerTest();
 
-	acmvcc::AccelerateMvcc mvcc(10);
+	acmvcc::Accelerate_mvcc mvcc(10);
 
 
 	return 0;
 }
 
 void trxManagerTest() {
-	acmvcc::TrxManager trxManager = acmvcc::TrxManager(1);
+	acmvcc::Trx_manager trxManager = acmvcc::Trx_manager(1);
 
 	cout << trxManager.startTrx() << endl;
 	cout << trxManager.startTrx() << endl;

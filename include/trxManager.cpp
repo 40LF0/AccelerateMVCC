@@ -4,26 +4,23 @@
 
 namespace acmvcc
 {
-    TrxManager::TrxManager(uint64_t record_count)
-    {
-        this->record_count = record_count;
-    }
 
-    uint64_t TrxManager::startTrx()
+    uint64_t Trx_manager::startTrx()
     {
-        return AtomicNextTrxId++;
+        return next_trx_id.fetch_add(1);
     }
 
 
-    bool TrxManager::commitTrx(uint64_t trxId)
+    bool Trx_manager::commitTrx(uint64_t trxId)
     {
         return false;
     }
 
-    bool TrxManager::rollBackTrx(uint64_t trxId)
+    bool Trx_manager::rollBackTrx(uint64_t trxId)
     {
         return false;
     }
+
 
 
 } // namespace acmvcc
