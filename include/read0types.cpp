@@ -31,11 +31,13 @@ this program; if not, write to the Free Software Foundation, Inc.,
  *******************************************************/
 
 #include "read0types.h"
-trx_sys_t* trx_sys = NULL;
- /**
- Try and increase the size of the array. Old elements are
- copied across.
- @param n 		Make space for n elements */
+
+trx_sys_t *trx_sys = NULL;
+
+/**
+Try and increase the size of the array. Old elements are
+copied across.
+@param n 		Make space for n elements */
 void ReadView::ids_t::reserve(ulint n) {
     if (n <= capacity()) {
         return;
@@ -47,7 +49,7 @@ void ReadView::ids_t::reserve(ulint n) {
     }
 
     // save old memory block pointer
-    value_type* p = m_ptr;
+    value_type *p = m_ptr;
 
     // create new memory block
     m_ptr = new_array<value_type>(n);
@@ -67,7 +69,7 @@ Copy and overwrite this array contents
 @param start		Source array
 @param end		Pointer to end of array */
 
-void ReadView::ids_t::assign(const value_type* start, const value_type* end) {
+void ReadView::ids_t::assign(const value_type *start, const value_type *end) {
 
     ulint n = end - start;
 
@@ -107,13 +109,12 @@ void ReadView::ids_t::insert(value_type value) {
         return;
     }
 
-    value_type* end = data() + size();
-    value_type* ub = std::upper_bound(data(), end, value);
+    value_type *end = data() + size();
+    value_type *ub = std::upper_bound(data(), end, value);
 
     if (ub == end) {
         push_back(value);
-    }
-    else {
+    } else {
         ulint n_elems = std::distance(ub, end);
         ulint n = n_elems * sizeof(value_type);
 
@@ -129,11 +130,11 @@ void ReadView::ids_t::insert(value_type value) {
 /**
 ReadView constructor */
 ReadView::ReadView()
-    : m_low_limit_id(),
-    m_up_limit_id(),
-    m_creator_trx_id(),
-    m_ids(),
-    m_low_limit_no() {
+        : m_low_limit_id(),
+          m_up_limit_id(),
+          m_creator_trx_id(),
+          m_ids(),
+          m_low_limit_no() {
 }
 
 /**
@@ -145,7 +146,7 @@ ReadView::~ReadView() {
 /**
 Copy the transaction ids from the source vector */
 
-void ReadView::copy_trx_ids(const trx_ids_t& trx_ids) {
+void ReadView::copy_trx_ids(const trx_ids_t &trx_ids) {
     ulint size = trx_ids.size();
 
     if (m_creator_trx_id > 0) {
@@ -160,7 +161,7 @@ void ReadView::copy_trx_ids(const trx_ids_t& trx_ids) {
     m_ids.reserve(size);
     m_ids.resize(size);
 
-    ids_t::value_type* p = m_ids.data();
+    ids_t::value_type *p = m_ids.data();
 
     /* Copy all the trx_ids except the creator trx id */
 
@@ -194,8 +195,7 @@ void ReadView::copy_trx_ids(const trx_ids_t& trx_ids) {
 
         ::memmove(p, &trx_ids[0], n);
 
-    }
-    else {
+    } else {
         ulint n = size * sizeof(trx_ids_t::value_type);
 
         ::memmove(p, &trx_ids[0], n);
@@ -209,7 +209,9 @@ Opens a read view where exactly the transactions serialized before this
 point in time are seen in the view.
 @param id		Creator transaction id */
 #include <iostream>
+
 using namespace std;
+
 void ReadView::prepare(trx_id_t id) {
     m_creator_trx_id = id;
 
@@ -219,13 +221,12 @@ void ReadView::prepare(trx_id_t id) {
 
     if (!trx_sys->rw_trx_ids.empty()) {
         copy_trx_ids(trx_sys->rw_trx_ids);
-    }
-    else {
+    } else {
         m_ids.clear();
     }
 
     if ((trx_sys->serialisation_list).count > 0) {
-        const trx_t* trx;
+        const trx_t *trx;
 
         trx = (trx_sys->serialisation_list).start;
 
@@ -241,13 +242,12 @@ void ReadView::prepare(trx_id_t id) {
 Copy state from another view. Must call copy_complete() to finish.
 @param other		view to copy from */
 
-void ReadView::copy_prepare(const ReadView& other) {
+void ReadView::copy_prepare(const ReadView &other) {
     if (!other.m_ids.empty()) {
-        const ids_t::value_type* p = other.m_ids.data();
+        const ids_t::value_type *p = other.m_ids.data();
 
         m_ids.assign(p, p + other.m_ids.size());
-    }
-    else {
+    } else {
         m_ids.clear();
     }
 
@@ -281,7 +281,7 @@ void ReadView::copy_complete() {
 //HYU
 trx_id_t ReadView::dead_up_limit_id(uint64_t limit_id) const {
 
-    const ids_t::value_type* p = m_ids.data();
+    const ids_t::value_type *p = m_ids.data();
 
     for (ulint i = 0; i < m_ids.size(); ++i) {
         if (p[i] > limit_id) {
@@ -293,9 +293,9 @@ trx_id_t ReadView::dead_up_limit_id(uint64_t limit_id) const {
 }
 
 //HYU
-void ReadView::copy_active_trx_list(uint64_t* trx_list, int& list_len) {
+void ReadView::copy_active_trx_list(uint64_t *trx_list, int &list_len) {
 
-    const ids_t::value_type* p = m_ids.data();
+    const ids_t::value_type *p = m_ids.data();
     int size = 0;
     for (ulint i = 0; i < m_ids.size(); ++i) {
         trx_list[i] = p[i];

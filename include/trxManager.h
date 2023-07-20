@@ -7,20 +7,17 @@
 #include <vector>
 #include <unordered_map> // Add this header for the std::unordered_map
 
-namespace mvcc
-{
+namespace mvcc {
 
     /**
     The TrxManager class represents mimc version of transaction manager in DBMS
     It should mange transaction id and classify which epoch is active or not.
     */
 
-    class Trx_manager
-    {
+    class Trx_manager {
     public:
         Trx_manager(uint64_t record_count)
-            : next_trx_id(1), record_count(record_count), mutexes(record_count)
-        {}
+                : next_trx_id(1), record_count(record_count), mutexes(record_count) {}
 
         uint64_t startTrx();
 

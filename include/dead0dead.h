@@ -1,5 +1,6 @@
 #ifndef dead0dead_h
 #define dead0dead_h
+
 #include <shared_mutex>
 #include "read0read.h"
 
@@ -9,7 +10,7 @@
 #define NUM_DEADZONE (50)
 #define LEN_DEAD_LIST (10)
 
-extern trx_sys_t* trx_sys;
+extern trx_sys_t *trx_sys;
 
 typedef std::shared_mutex rw_lock_t;
 
@@ -28,23 +29,23 @@ Deadzone structure is managed by list (m_dead_list) whose maximum length is fixe
 */
 
 struct deadzone {
-	deadzone() : len(0), ref_cnt(0), oldest_active_trx_list_len(0), oldest_low_limit_id(0) {
-		memset(range, 0x00, sizeof(uint64_t) * NUM_DEADZONE * 2);
-		memset(oldest_active_trx_list, 0x00, sizeof(oldest_active_trx_list));
-	}
+    deadzone() : len(0), ref_cnt(0), oldest_active_trx_list_len(0), oldest_low_limit_id(0) {
+        memset(range, 0x00, sizeof(uint64_t) * NUM_DEADZONE * 2);
+        memset(oldest_active_trx_list, 0x00, sizeof(oldest_active_trx_list));
+    }
 
-	uint64_t range[2 * NUM_DEADZONE];
+    uint64_t range[2 * NUM_DEADZONE];
 
-	uint64_t len;
+    uint64_t len;
 
-	uint64_t ref_cnt;
+    uint64_t ref_cnt;
 
-	uint64_t oldest_active_trx_list[NUM_WORKER_THREAD];
-	int oldest_active_trx_list_len;
-	uint64_t oldest_low_limit_id;
+    uint64_t oldest_active_trx_list[NUM_WORKER_THREAD];
+    int oldest_active_trx_list_len;
+    uint64_t oldest_low_limit_id;
 
-	typedef UT_LIST_NODE_T(deadzone) node_t;
-	node_t m_dead_list;
+    typedef UT_LIST_NODE_T(deadzone) node_t;
+    node_t m_dead_list;
 };
 
 /**
@@ -55,63 +56,68 @@ This class represents "deadzone system".
 class DEAD {
 
 public:
-	explicit DEAD();
-	~DEAD();
+    explicit DEAD();
 
-	/* Get current view list */
-	ReadView* get_view_list();
+    ~DEAD();
 
-	/* Get length pointer */
-	ulint* get_length();
+    /* Get current view list */
+    ReadView *get_view_list();
 
-	/* Update old deadzone to new one */
-	void update_dead_zone();
+    /* Get length pointer */
+    ulint *get_length();
 
-	///* Check whether prune or not */
-	//bool can_pruning(vnum_t, vnum_t);
+    /* Update old deadzone to new one */
+    void update_dead_zone();
 
-	/* Get current deadzone for reader (pruning & llb cutter) */
-	deadzone* get_cur_zone() { return cur_zone; }
+    ///* Check whether prune or not */
+    //bool can_pruning(vnum_t, vnum_t);
 
-	/* Get latch(rwlock) */
-	rw_lock_t* get_latch() { return &latch; }
+    /* Get current deadzone for reader (pruning & llb cutter) */
+    deadzone *get_cur_zone() { return cur_zone; }
 
-	/* API for rwlock */
-	void rw_x_lock() { latch.lock(); }
-	void rw_s_lock() { latch.lock_shared(); }
-	void rw_x_unlock() { latch.unlock(); }
-	void rw_s_unlock() { latch.unlock_shared(); }
+    /* Get latch(rwlock) */
+    rw_lock_t *get_latch() { return &latch; }
 
-private:
-	/* Prevent copying */
-	DEAD(const DEAD&);
-	DEAD& operator=(const MVCC&);
+    /* API for rwlock */
+    void rw_x_lock() { latch.lock(); }
 
-private:
-	/* Get free dead node from list */
-	deadzone* get_dead();
+    void rw_s_lock() { latch.lock_shared(); }
+
+    void rw_x_unlock() { latch.unlock(); }
+
+    void rw_s_unlock() { latch.unlock_shared(); }
 
 private:
-	/* latch for rwlock */
-	rw_lock_t latch;
+    /* Prevent copying */
+    DEAD(const DEAD &);
 
-	/* view list for copying current one from trx_sys */
-	ReadView* view_list;
-
-	/* The length of view list */
-	ulint length;
-
-	/* Current deadzone pointer */
-	deadzone* cur_zone;
+    DEAD &operator=(const MVCC &);
 
 private:
-	typedef UT_LIST_BASE_NODE_T(deadzone) dead_list_t;
+    /* Get free dead node from list */
+    deadzone *get_dead();
 
-	/** Free node ready for reuse */
-	dead_list_t m_free;
+private:
+    /* latch for rwlock */
+    rw_lock_t latch;
 
-	/** Active deadzone node */
-	dead_list_t m_dead;
+    /* view list for copying current one from trx_sys */
+    ReadView *view_list;
+
+    /* The length of view list */
+    ulint length;
+
+    /* Current deadzone pointer */
+    deadzone *cur_zone;
+
+private:
+    typedef UT_LIST_BASE_NODE_T(deadzone) dead_list_t;
+
+    /** Free node ready for reuse */
+    dead_list_t m_free;
+
+    /** Active deadzone node */
+    dead_list_t m_dead;
 };
 
 #endif /* dead0dead.h */

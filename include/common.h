@@ -3,6 +3,7 @@
 
 #ifndef common_h
 #define common_h
+
 #include <cstdint>
 
 #define EPOCH_SIZE 100

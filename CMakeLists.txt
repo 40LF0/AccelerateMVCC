@@ -18,8 +18,6 @@ set(COMMON_SOURCES
   "include/accelerateMvcc.h"
   "include/accelerateMvcc.cpp"
   "include/trxManager.cpp"
-  "include/epochList.h"
-  
   "include/node.h"
   "include/node.cpp"
   "include/common.h"
@@ -30,6 +28,8 @@ set(COMMON_SOURCES
   "include/dead0dead.cpp"
   "include/read0read.cpp"
   "include/read0types.cpp"
+  "include/epoch_table.h"
+  "include/epoch_table.cpp"
 )
 # Add source to this project's executable.
 add_executable (AccelerateMVCC

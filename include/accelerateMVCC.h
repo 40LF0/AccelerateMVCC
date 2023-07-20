@@ -10,6 +10,7 @@
 #include "kuku/kuku.h"
 #include "node.h"
 #include "common.h"
+#include "epoch_table.h"
 
 namespace mvcc
 {

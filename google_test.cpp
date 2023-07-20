@@ -4,8 +4,7 @@
 using namespace std;
 using namespace kuku;
 
-TEST(CommonTests, SetItem)
-{
+TEST(CommonTests, SetItem) {
     item_type bl;
 
     set_item(0, 0, bl);
@@ -28,15 +27,14 @@ TEST(CommonTests, SetItem)
     ASSERT_EQ(0xF00FF00FF00FF00F, get_low_word(bl));
     ASSERT_EQ(0xBABABABABABABABA, get_high_word(bl));
 
-    unsigned char data[bytes_per_item]{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-                                        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07 };
+    unsigned char data[bytes_per_item]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                                       0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
     set_item(data, bl);
     ASSERT_EQ(0x0706050403020100, get_low_word(bl));
     ASSERT_EQ(0x0706050403020100, get_high_word(bl));
 }
 
-TEST(CommonTests, SetZeroItem)
-{
+TEST(CommonTests, SetZeroItem) {
     item_type bl;
 
     set_item(0, 0, bl);
@@ -50,8 +48,7 @@ TEST(CommonTests, SetZeroItem)
     ASSERT_EQ(0, get_high_word(bl));
 }
 
-TEST(CommonTests, SetAllOnesItem)
-{
+TEST(CommonTests, SetAllOnesItem) {
     item_type bl;
 
     set_zero_item(bl);
@@ -65,8 +62,7 @@ TEST(CommonTests, SetAllOnesItem)
     ASSERT_EQ(0xFFFFFFFFFFFFFFFFULL, get_high_word(bl));
 }
 
-TEST(CommonTests, IsZeroItem)
-{
+TEST(CommonTests, IsZeroItem) {
     item_type bl;
 
     set_item(0, 0, bl);
@@ -82,8 +78,7 @@ TEST(CommonTests, IsZeroItem)
     ASSERT_FALSE(is_zero_item(bl));
 }
 
-TEST(CommonTests, IsAllOnesItem)
-{
+TEST(CommonTests, IsAllOnesItem) {
     item_type bl;
 
     set_all_ones_item(bl);
@@ -99,8 +94,7 @@ TEST(CommonTests, IsAllOnesItem)
     ASSERT_FALSE(is_all_ones_item(bl));
 }
 
-TEST(CommonTests, SetRandomItem)
-{
+TEST(CommonTests, SetRandomItem) {
     item_type bl;
 
     set_random_item(bl);
@@ -112,16 +106,14 @@ TEST(CommonTests, SetRandomItem)
     ASSERT_FALSE(are_equal_item(bl, bl2));
 }
 
-TEST(CommonTests, ZeroItem)
-{
+TEST(CommonTests, ZeroItem) {
     item_type bl = make_random_item();
     ASSERT_FALSE(is_zero_item(bl));
     bl = make_zero_item();
     ASSERT_TRUE(is_zero_item(bl));
 }
 
-TEST(CommonTests, IncrementItem)
-{
+TEST(CommonTests, IncrementItem) {
     item_type bl = make_item(0, 0);
 
     increment_item(bl);
@@ -144,8 +136,7 @@ TEST(CommonTests, IncrementItem)
     ASSERT_EQ(0x0, get_high_word(bl));
 }
 
-TEST(KukuTableTests, Create)
-{
+TEST(KukuTableTests, Create) {
     ASSERT_THROW(KukuTable(0, 0, 2, make_zero_item(), 1, make_zero_item()), invalid_argument);
     ASSERT_THROW(KukuTable(1, 0, 0, make_zero_item(), 1, make_zero_item()), invalid_argument);
     ASSERT_THROW(KukuTable(1, 0, 2, make_zero_item(), 0, make_zero_item()), invalid_argument);
@@ -153,8 +144,7 @@ TEST(KukuTableTests, Create)
     ASSERT_NO_THROW(KukuTable(1, 0, min_loc_func_count, make_zero_item(), 1, make_zero_item()));
 }
 
-TEST(KukuTableTests, Populate1)
-{
+TEST(KukuTableTests, Populate1) {
     {
         KukuTable ct(1, 0, 1, make_zero_item(), 10, make_zero_item());
         ASSERT_TRUE(ct.is_empty(0));
@@ -189,11 +179,9 @@ TEST(KukuTableTests, Populate1)
     }
 }
 
-TEST(KukuTableTests, Populate2)
-{
+TEST(KukuTableTests, Populate2) {
     KukuTable ct(1 << 10, 0, 2, make_zero_item(), 10, make_zero_item());
-    for (location_type i = 0; i < ct.table_size(); i++)
-    {
+    for (location_type i = 0; i < ct.table_size(); i++) {
         ASSERT_TRUE(ct.is_empty(i));
     }
 
@@ -205,8 +193,7 @@ TEST(KukuTableTests, Populate2)
     ASSERT_THROW(ct.insert(make_item(0, 0)), invalid_argument);
 
     int non_empties = 0;
-    for (location_type i = 0; i < ct.table_size(); i++)
-    {
+    for (location_type i = 0; i < ct.table_size(); i++) {
         non_empties += ct.is_empty(i) ? 0 : 1;
     }
     ASSERT_EQ(non_empties, 4);
@@ -218,11 +205,9 @@ TEST(KukuTableTests, Populate2)
     ASSERT_FALSE(ct.query(make_item(3, 3)));
 }
 
-TEST(KukuTableTests, Populate3)
-{
+TEST(KukuTableTests, Populate3) {
     KukuTable ct(1 << 10, 0, 2, make_zero_item(), 10, make_random_item());
-    for (location_type i = 0; i < ct.table_size(); i++)
-    {
+    for (location_type i = 0; i < ct.table_size(); i++) {
         ASSERT_TRUE(ct.is_empty(i));
     }
 
@@ -238,8 +223,7 @@ TEST(KukuTableTests, Populate3)
     ASSERT_THROW(ct.insert(ct.empty_item()), invalid_argument);
 
     int non_empties = 0;
-    for (location_type i = 0; i < ct.table_size(); i++)
-    {
+    for (location_type i = 0; i < ct.table_size(); i++) {
         non_empties += ct.is_empty(i) ? 0 : 1;
     }
     ASSERT_EQ(non_empties, 5);
@@ -252,75 +236,61 @@ TEST(KukuTableTests, Populate3)
     ASSERT_FALSE(ct.query(make_item(3, 3)));
 }
 
-TEST(KukuTableTests, Fill1)
-{
+TEST(KukuTableTests, Fill1) {
     KukuTable ct(1 << 10, 0, 2, make_zero_item(), 100, make_random_item());
     vector<item_type> inserted_items;
-    for (int i = 0; i < 100; i++)
-    {
+    for (int i = 0; i < 100; i++) {
         inserted_items.emplace_back(make_random_item());
         ASSERT_TRUE(ct.insert(inserted_items.back()));
     }
-    for (auto b : inserted_items)
-    {
+    for (auto b: inserted_items) {
         ASSERT_TRUE(ct.query(b));
     }
     ASSERT_FALSE(ct.query(make_random_item()));
 }
 
-TEST(KukuTableTests, Fill2)
-{
+TEST(KukuTableTests, Fill2) {
     KukuTable ct((1 << 10) - 1, 0, 4, make_zero_item(), 100, make_random_item());
     vector<item_type> inserted_items;
-    for (int i = 0; i < 600; i++)
-    {
+    for (int i = 0; i < 600; i++) {
         inserted_items.emplace_back(make_random_item());
         ASSERT_TRUE(ct.insert(inserted_items.back()));
     }
-    for (auto b : inserted_items)
-    {
+    for (auto b: inserted_items) {
         ASSERT_TRUE(ct.query(b));
     }
     ASSERT_FALSE(ct.query(make_random_item()));
 }
 
-TEST(KukuTableTests, Fill3)
-{
+TEST(KukuTableTests, Fill3) {
     KukuTable ct((1 << 10) + 1, 4, 2, make_zero_item(), 100, make_random_item());
     vector<item_type> inserted_items;
-    for (int i = 0; i < 950; i++)
-    {
+    for (int i = 0; i < 950; i++) {
         inserted_items.emplace_back(make_random_item());
-        if (!ct.insert(inserted_items.back()))
-        {
-            auto it = find_if(inserted_items.cbegin(), inserted_items.cend(), [&](const item_type& item) {
+        if (!ct.insert(inserted_items.back())) {
+            auto it = find_if(inserted_items.cbegin(), inserted_items.cend(), [&](const item_type &item) {
                 return are_equal_item(ct.leftover_item(), item);
-                });
+            });
             ASSERT_TRUE(it != inserted_items.cend());
             ASSERT_FALSE(ct.query(ct.leftover_item()));
             inserted_items.erase(it);
         }
     }
-    for (auto b : inserted_items)
-    {
+    for (auto b: inserted_items) {
         ASSERT_TRUE(ct.query(b));
     }
 }
 
-TEST(KukuTableTests, Locations)
-{
+TEST(KukuTableTests, Locations) {
     uint8_t lfc = 2;
     KukuTable ct(1 << 10, 4, lfc, make_random_item(), 100, make_all_ones_item());
-    for (int k = 0; k < 20; k++)
-    {
+    for (int k = 0; k < 20; k++) {
         auto it = make_random_item();
         auto all_locs = ct.all_locations(it);
 
         bool collision_found = false;
-        for (uint8_t i = 0; i < lfc; i++)
-        {
-            for (uint8_t j = 0; j < i; j++)
-            {
+        for (uint8_t i = 0; i < lfc; i++) {
+            for (uint8_t j = 0; j < i; j++) {
                 collision_found = collision_found || (ct.location(it, i) == ct.location(it, j));
             }
         }
@@ -329,8 +299,7 @@ TEST(KukuTableTests, Locations)
     }
 }
 
-TEST(KukuTableTests, RepeatedInsert)
-{
+TEST(KukuTableTests, RepeatedInsert) {
     KukuTable ct(1 << 10, 0, 4, make_zero_item(), 10, make_zero_item());
     ASSERT_TRUE(ct.insert(make_item(1, 0)));
     ASSERT_TRUE(ct.insert(make_item(0, 1)));
@@ -343,40 +312,34 @@ TEST(KukuTableTests, RepeatedInsert)
     ASSERT_FALSE(ct.insert(make_item(2, 2)));
 }
 
-TEST(LocFuncTests, Create)
-{
+TEST(LocFuncTests, Create) {
     ASSERT_THROW(LocFunc(0, make_item(0, 0)), invalid_argument);
     ASSERT_THROW(LocFunc(max_table_size + 1, make_item(0, 0)), invalid_argument);
     ASSERT_THROW(LocFunc(0, make_item(1, 1)), invalid_argument);
 }
 
-TEST(LocFuncTests, Randomness)
-{
-    for (table_size_type ts = min_table_size; ts < 5 * min_table_size; ts++)
-    {
-        for (int attempts = 0; attempts < 10; attempts++)
-        {
+TEST(LocFuncTests, Randomness) {
+    for (table_size_type ts = min_table_size; ts < 5 * min_table_size; ts++) {
+        for (int attempts = 0; attempts < 10; attempts++) {
             item_type seed = make_random_item();
             LocFunc lf(ts, seed);
             LocFunc lf2(ts, seed);
 
             uint64_t zeros = 0;
             uint64_t total = 1000;
-            for (uint64_t i = 0; i < total; i++)
-            {
+            for (uint64_t i = 0; i < total; i++) {
                 item_type bl;
                 set_random_item(bl);
                 ASSERT_TRUE(lf(bl) == lf2(bl));
                 zeros += (lf(bl) == size_t(0));
             }
             ASSERT_TRUE(
-                abs(static_cast<double>(zeros) / static_cast<double>(total) - 1 / static_cast<double>(ts)) < 0.05);
+                    abs(static_cast<double>(zeros) / static_cast<double>(total) - 1 / static_cast<double>(ts)) < 0.05);
         }
     }
 }
 
-TEST(KukuValueTest, ValueManipulation)
-{
+TEST(KukuValueTest, ValueManipulation) {
     item_type item;
     std::uint64_t value = 123456789;
 
@@ -394,8 +357,7 @@ TEST(KukuValueTest, ValueManipulation)
     ASSERT_EQ(newValue, get_value(item));
 }
 
-TEST(KukuValueTest, location1)
-{
+TEST(KukuValueTest, location1) {
     KukuTable ct(1, 0, 1, make_zero_item(), 10, make_zero_item());
 
     ASSERT_TRUE(ct.is_empty(0));
@@ -413,12 +375,11 @@ TEST(KukuValueTest, location1)
 
 
     QueryResult result = ct.query(make_item(1, 0));
-    ASSERT_EQ(get_value(ct.table(result.location())),value);
+    ASSERT_EQ(get_value(ct.table(result.location())), value);
 
 }
 
-TEST(KukuValueTest, location2)
-{
+TEST(KukuValueTest, location2) {
     KukuTable ct(1, 1, 1, make_zero_item(), 10, make_zero_item());
 
     ASSERT_TRUE(ct.is_empty(0));
