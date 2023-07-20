@@ -45,12 +45,30 @@ namespace acmvcc{
 		uint64_t min_trx_id;
 		uint64_t max_trx_id;
 		uint64_t count;
-		std::atomic<undo_entry_node*> next_entry;
+		undo_entry_node* fisrt_entry;
+		std::atomic<undo_entry_node*> last_entry;
+		std::atomic<epoch_node*> prev;
 		std::atomic<epoch_node*> next;
 
-		epoch_node(uint64_t epoch_num, uint64_t trx_id, undo_entry_node* next_entry, epoch_node* next)
-			: epoch_num(epoch_num), min_trx_id(trx_id), max_trx_id(trx_id), count(1), next_entry(next_entry), next(next)  {}
+		epoch_node(uint64_t epoch_num, uint64_t trx_id, undo_entry_node* undo_entry, epoch_node* next)
+			: epoch_num(epoch_num), min_trx_id(trx_id), max_trx_id(trx_id), count(1),
+			fisrt_entry(undo_entry), last_entry(undo_entry),
+			prev(nullptr), next(next) {}
+
+		epoch_node() {}
+
 	};
+
+	void update_epoch_node(epoch_node* epoch, uint64_t epoch_num, uint64_t trx_id, undo_entry_node* undo_entry, epoch_node* next) {
+		epoch->epoch_num = epoch_num;
+		epoch->min_trx_id = trx_id;
+		epoch->max_trx_id = trx_id;
+		epoch->count = 1;
+		epoch->fisrt_entry = undo_entry;
+		epoch->last_entry.store(undo_entry);
+		// if next is not nullptr, next is garbage collected. And next's next is setted to epoch's next
+		epoch->next.compare_exchange_strong(next, nullptr);
+	}
 
 	struct header_node {
 		uint64_t next_epoch_num;

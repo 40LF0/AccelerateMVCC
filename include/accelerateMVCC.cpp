@@ -56,7 +56,12 @@ bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 		header_node* header = reinterpret_cast<header_node*>(&item);
 		if (header->next_epoch_num < epoch_num) {
 			// create new epoch and insert it to header
-			epoch_node* epoch = new epoch_node(epoch_num, trx_id, undo_entry, header->next.load());
+
+			// concurrency control btw inserting and gc operation
+			epoch_node* epoch = new epoch_node();
+			header->next.load()->prev.store(epoch);
+			update_epoch_node(epoch, epoch_num, trx_id, undo_entry, header->next.load());
+
 			header->next_epoch_num = epoch_num;
 			header->next.store(epoch);
 		}
@@ -64,15 +69,15 @@ bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 			// insert undo log entry to existing epoch
 			epoch_node* epoch = header->next.load();
 			epoch->count++;
-			undo_entry_node* next_entry = epoch->next_entry;
+			undo_entry_node* last_entry = epoch->last_entry.load();
 			if (trx_id < epoch->min_trx_id) {
 				epoch->min_trx_id = trx_id;
 			}
 			if (trx_id > epoch->max_trx_id) {
 				epoch->max_trx_id = trx_id;
 			}
-			undo_entry->next_entry.store(next_entry);
-			epoch->next_entry.store(undo_entry);
+			undo_entry->next_entry.store(last_entry);
+			epoch->last_entry.store(undo_entry);
 		}
 	}
 	else {
@@ -96,10 +101,14 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 	kuku::item_type item = kuku::make_item(table_id, index);
 	uint64_t epoch_num = get_epoch_num(trx_id);
 	kuku::QueryResult query = kuku_table->query(item);
+
+	// if there is no undo log of the record, return false
 	if (!query.found()) {
 		return false;
 	}
+	
 
+	/*Phase 1 : get address of header node*/
 	uint64_t value;
 	int location = query.location();
 
@@ -111,17 +120,26 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 		item = kuku_table->table(query.location());
 		value = kuku::get_value(item);
 	}
+
+	//get address of header node of interval list
 	header_node* header = reinterpret_cast<header_node*>(&item);
 
+
+	/*Phase 2 : get proper version with traversing epoch-based interval list*/
 	epoch_node* epoch = header->next.load();
+
 	while (epoch != NULL && epoch != nullptr) {
+		/*Phase 2-1 : skip epoch node*/
+		//skip epoch node whose epoch_number is greater than our trx's epoch number
 		if (epoch->epoch_num > epoch_num) {
 			epoch = epoch->next.load();
 			continue;
 		}
 		else {
-			undo_entry_node* undo_entry = epoch->next_entry.load();
+			/*Phase 2-2 : traverse undo log entry node*/
+			undo_entry_node* undo_entry = epoch->fisrt_entry;
 			while (undo_entry != NULL && undo_entry != nullptr) {
+				// transaction cannot see higher trx_id version than its trx_id
 				if (undo_entry->trx_id < trx_id) {
 					// undo log's trx_id is not in active transaction list
 					if(std::find(active_trx_list.begin(), active_trx_list.end(), undo_entry->trx_id) == active_trx_list.end()) {
@@ -133,6 +151,7 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 				}
 				undo_entry = undo_entry->next_entry.load();
 			}
+			epoch = epoch->next.load();
 		}
 	}
 
