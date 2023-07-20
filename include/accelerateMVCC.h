@@ -1,11 +1,15 @@
 // Licensed under the MIT license.
 #pragma once
 
+#ifndef accelerateMVCC_h
+#define accelerateMVCC_h
+
 #include <cstdint>
 #include <iostream>
-#include "epochList.h"
 #include "trxManager.h"
 #include "kuku/kuku.h"
+#include "node.h"
+#include "common.h"
 
 namespace mvcc
 {
@@ -38,7 +42,7 @@ namespace mvcc
             );
 
         static uint64_t get_epoch_num(uint64_t trx_id) {
-            return trx_id / 100;
+            return trx_id / EPOCH_SIZE;
         }
 
 
@@ -59,3 +63,4 @@ namespace mvcc
 
 
 } // namespace mvcc
+#endif /* accelerateMVCC_h */

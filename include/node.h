@@ -1,9 +1,12 @@
 // Licensed under the MIT license.
 #pragma once
 
+
 #include <cstdint>
 #include <atomic>
 
+#ifndef node_h
+#define node_h
 namespace mvcc{
 
 	struct UndoLogEntryNode {
@@ -74,3 +77,4 @@ namespace mvcc{
 
 
 } // namespace mvcc
+#endif /* node_h */

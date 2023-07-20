@@ -1,10 +1,10 @@
 // Licensed under the MIT license.
 #pragma once
 
+#ifndef common_h
+#define common_h
 #include <cstdint>
-namespace mvcc
-{
-	uint64_t EPOCH_SIZE = 100;
 
-} // namespace mvcc
+#define EPOCH_SIZE 100
+#endif /* common_h */
 

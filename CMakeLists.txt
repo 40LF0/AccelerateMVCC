@@ -19,7 +19,7 @@ set(COMMON_SOURCES
   "include/accelerateMvcc.cpp"
   "include/trxManager.cpp"
   "include/epochList.h"
-  "include/epochList.cpp"
+  
   "include/node.h"
   "include/node.cpp"
   "include/common.h"
