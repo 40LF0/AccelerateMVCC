@@ -59,7 +59,7 @@ int main()
 	QueryResult result = table.query(make_item(100,101));
 
 	QueryResult res = result;
-	cout << "Found: " << boolalpha << !!res << endl;
+	cout << "Found: " << boolalpha << res << endl;
 	if (res)
 	{
 		cout << "Location: " << res.location() << endl;
@@ -81,14 +81,14 @@ int main()
 
 	trxManagerTest();
 
-	acmvcc::Accelerate_mvcc mvcc(10);
+	mvcc::Accelerate_mvcc mvcc(10);
 
 
 	return 0;
 }
 
 void trxManagerTest() {
-	acmvcc::Trx_manager trxManager = acmvcc::Trx_manager(1);
+	mvcc::Trx_manager trxManager = mvcc::Trx_manager(1);
 
 	cout << trxManager.startTrx() << endl;
 	cout << trxManager.startTrx() << endl;

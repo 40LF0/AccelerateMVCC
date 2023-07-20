@@ -7,7 +7,7 @@
 #include <vector>
 #include <unordered_map> // Add this header for the std::unordered_map
 
-namespace acmvcc
+namespace mvcc
 {
 
     /**
@@ -38,4 +38,4 @@ namespace acmvcc
     };
 
 
-} // namespace acmvcc
+} // namespace mvcc

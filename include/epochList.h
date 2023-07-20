@@ -5,7 +5,7 @@
 #include <atomic>
 #include "node.h"
 
-namespace acmvcc
+namespace mvcc
 {
     /**
     The EpochList class represents the item of a hash table.
@@ -26,4 +26,4 @@ namespace acmvcc
 
     };
 
-} // namespace acmvcc
+} // namespace mvcc

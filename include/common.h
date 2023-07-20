@@ -2,9 +2,9 @@
 #pragma once
 
 #include <cstdint>
-namespace acmvcc
+namespace mvcc
 {
 	uint64_t EPOCH_SIZE = 100;
 
-} // namespace acmvcc
+} // namespace mvcc
 

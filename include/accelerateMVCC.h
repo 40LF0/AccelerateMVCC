@@ -7,7 +7,7 @@
 #include "trxManager.h"
 #include "kuku/kuku.h"
 
-namespace acmvcc
+namespace mvcc
 {
     /**
     The AccelerateMvcc class represents a entire in-memory structure for accelerating MVCC. 
@@ -16,7 +16,7 @@ namespace acmvcc
     class Accelerate_mvcc;
 
     /**
-    The TrxManager class represents mimc version of transaction manager in DBMS
+    The TrxManager class represents mimic version of transaction manager in DBMS
     It should mange transaction id and classify which epoch is active or not.
     */
     class Trx_manager;
@@ -28,7 +28,7 @@ namespace acmvcc
     class Accelerate_mvcc {
 
     public:
-        Accelerate_mvcc(uint64_t record_count);
+        explicit Accelerate_mvcc(uint64_t record_count);
 
         bool insert(uint64_t table_id, uint64_t index, uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset);
 
@@ -37,20 +37,20 @@ namespace acmvcc
             std::vector<uint64_t> active_trx_list
             );
 
-        uint64_t get_epoch_num(uint64_t trx_id) {
+        static uint64_t get_epoch_num(uint64_t trx_id) {
             return trx_id / 100;
         }
 
 
     private:
         /**
-        The kukuTable represents a cockoo hash table. It includes information about the location functions (hash
+        The kukuTable represents a cuckoo hash table. It includes information about the location functions (hash
         functions) and holds the items inserted into the table.
         */
         kuku::KukuTable* kuku_table;
 
         /**
-        The trxManager represents mimc version of transaction manager in DBMS
+        The trxManager represents mimic version of transaction manager in DBMS
         It should mange transaction id and classify which epoch is active or not.
         */
         Trx_manager* trxManger;
@@ -58,4 +58,4 @@ namespace acmvcc
     };
 
 
-} // namespace acmvcc
+} // namespace mvcc

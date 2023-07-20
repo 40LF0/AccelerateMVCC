@@ -2,7 +2,7 @@
 
 #include "accelerateMVCC.h"
 
-acmvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
+mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 {
 	uint64_t max_value = std::numeric_limits<uint64_t>::max();
 	// if you are willing to test large number of elements, you have to change table size : (1 << 10) + 1 to (1 << 16)
@@ -14,10 +14,10 @@ acmvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 		kuku::item_type item = kuku::make_item(1,i);
 		
 		// value is header node pointer address for epoch-based interval linked list
-		header_node* header = new header_node();
+		auto* header = new header_node();
 
 		
-		std::uint64_t value = reinterpret_cast<std::uint64_t>(&header);
+		auto value = reinterpret_cast<std::uint64_t>(&header);
 		
 		// we can get header address from value
 		// header_node* header = reinterpret_cast<header_node*>(value);
@@ -35,18 +35,17 @@ acmvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 
 
 // this will be used when implementing to mysql source code.
-bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index, 
-	uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset)
+bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
+                                   uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset)
 {
 	kuku::item_type item = kuku::make_item(table_id, index);
 
-	undo_entry_node* undo_entry = new undo_entry_node(trx_id, space_id, page_id, offset);
+	auto* undo_entry = new undo_entry_node(trx_id, space_id, page_id, offset);
 	uint64_t epoch_num = get_epoch_num(trx_id);
 
 	kuku::QueryResult query =  kuku_table->query(item);
 	if (query.found()) {
 		uint64_t value;
-		int location = query.location();
 		if (query.in_stash()) {
 			item = kuku_table->stash(query.location());
 			value = kuku::get_value(item);
@@ -55,12 +54,12 @@ bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 			item = kuku_table->table(query.location());
 			value = kuku::get_value(item);
 		}
-		header_node* header = reinterpret_cast<header_node*>(&item);
+		auto* header = reinterpret_cast<header_node*>(&value);
 		if (header->next_epoch_num < epoch_num) {
 			// create new epoch and insert it to header
 
 			// concurrency control btw inserting and gc operation
-			epoch_node* epoch = new epoch_node();
+			auto* epoch = new epoch_node();
 			header->next.load()->prev.store(epoch);
 			update_epoch_node(epoch, epoch_num, trx_id, undo_entry, header->next.load());
 
@@ -83,11 +82,11 @@ bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 		}
 	}
 	else {
-		epoch_node* epoch = new epoch_node(epoch_num, trx_id, undo_entry, nullptr);
-		header_node* header = new header_node();
+		auto* epoch = new epoch_node(epoch_num, trx_id, undo_entry, nullptr);
+		auto* header = new header_node();
 		header->next_epoch_num = epoch_num;
 		header->next.store(epoch);
-		std::uint64_t value = reinterpret_cast<std::uint64_t>(&header);
+		auto value = reinterpret_cast<std::uint64_t>(&header);
 
 		kuku::set_value(value, item);
 
@@ -96,9 +95,9 @@ bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
 }
 
-bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
-	uint64_t trx_id, uint64_t& space_id, uint64_t& page_id, uint64_t& offset, 
-	std::vector<uint64_t> active_trx_list)
+bool mvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
+                                   uint64_t trx_id, uint64_t& space_id, uint64_t& page_id, uint64_t& offset,
+                                   std::vector<uint64_t> active_trx_list)
 {
 	kuku::item_type item = kuku::make_item(table_id, index);
 	uint64_t epoch_num = get_epoch_num(trx_id);
@@ -112,7 +111,6 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 
 	/*Phase 1 : get address of header node*/
 	uint64_t value;
-	int location = query.location();
 
 	if (query.in_stash()) {
 		item = kuku_table->stash(query.location());
@@ -124,15 +122,15 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 	}
 
 	//get address of header node of interval list
-	header_node* header = reinterpret_cast<header_node*>(&item);
+	auto* header = reinterpret_cast<header_node*>(&value);
 
 
 	/*Phase 2 : get proper version with traversing epoch-based interval list*/
 	epoch_node* epoch = header->next.load();
 
-	while (epoch != NULL && epoch != nullptr) {
+	while (epoch != nullptr) {
 		/*Phase 2-1 : skip epoch node*/
-		//skip epoch node whose epoch_number is greater than our trx's epoch number
+		//skip epoch node whose epoch_number is greater than our transaction's epoch number
 		if (epoch->epoch_num > epoch_num) {
 			epoch = epoch->next.load();
 			continue;
@@ -140,7 +138,7 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 		else {
 			/*Phase 2-2 : traverse undo log entry node*/
 			undo_entry_node* undo_entry = epoch->fisrt_entry;
-			while (undo_entry != NULL && undo_entry != nullptr) {
+			while (undo_entry != nullptr) {
 				// transaction cannot see higher trx_id version than its trx_id
 				if (undo_entry->trx_id < trx_id) {
 					// undo log's trx_id is not in active transaction list

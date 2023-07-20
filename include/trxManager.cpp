@@ -2,7 +2,7 @@
 
 // Later, we will implement transaction manager from VDriver.
 
-namespace acmvcc
+namespace mvcc
 {
 
     uint64_t Trx_manager::startTrx()
@@ -23,7 +23,7 @@ namespace acmvcc
 
 
 
-} // namespace acmvcc
+} // namespace mvcc
 
 
 

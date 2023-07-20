@@ -1,7 +1,7 @@
 #include "epochList.h"
 #include "common.h"
 
-namespace acmvcc
+namespace mvcc
 {
 	/**When insert epochList pointer to hashMap, we have to do CAS operation.
 	* If CAS succeed(return : null value), new epochList is successfuly inserted to hashmap.
@@ -26,4 +26,4 @@ namespace acmvcc
 		return false;
 	}
 
-} // namespace acmvcc
+} // namespace mvcc

@@ -13,7 +13,7 @@ DEAD::DEAD() {
 
 	for (int i = 0; i < LEN_DEAD_LIST; ++i) {
 		//deadzone* dead = UT_NEW_NOKEY(deadzone());
-		deadzone* dead = new deadzone();
+		auto* dead = new deadzone();
 
 		UT_LIST_ADD_FIRST(m_free, dead);
 	}

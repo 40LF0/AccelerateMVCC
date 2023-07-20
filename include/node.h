@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <atomic>
 
-namespace acmvcc{
+namespace mvcc{
 
 	struct UndoLogEntryNode {
 		uint64_t trxId;
@@ -73,4 +73,4 @@ namespace acmvcc{
 
 
 
-} // namespace acmvcc
+} // namespace mvcc
