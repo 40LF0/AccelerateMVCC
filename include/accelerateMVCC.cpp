@@ -32,6 +32,8 @@ acmvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 }
 
 
+
+
 // this will be used when implementing to mysql source code.
 bool acmvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index, 
 	uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset)
@@ -157,3 +159,5 @@ bool acmvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
 
 	return false;
 }
+
+

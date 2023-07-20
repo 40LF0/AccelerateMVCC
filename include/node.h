@@ -55,20 +55,14 @@ namespace acmvcc{
 			fisrt_entry(undo_entry), last_entry(undo_entry),
 			prev(nullptr), next(next) {}
 
-		epoch_node() {}
+		epoch_node()
+			: epoch_num(0), min_trx_id(0), max_trx_id(0), count(0),
+			fisrt_entry(nullptr), last_entry(nullptr), 
+			prev(nullptr), next(nullptr) {}
 
 	};
 
-	void update_epoch_node(epoch_node* epoch, uint64_t epoch_num, uint64_t trx_id, undo_entry_node* undo_entry, epoch_node* next) {
-		epoch->epoch_num = epoch_num;
-		epoch->min_trx_id = trx_id;
-		epoch->max_trx_id = trx_id;
-		epoch->count = 1;
-		epoch->fisrt_entry = undo_entry;
-		epoch->last_entry.store(undo_entry);
-		// if next is not nullptr, next is garbage collected. And next's next is setted to epoch's next
-		epoch->next.compare_exchange_strong(next, nullptr);
-	}
+	void update_epoch_node(epoch_node* epoch, uint64_t epoch_num, uint64_t trx_id, undo_entry_node* undo_entry, epoch_node* next);
 
 	struct header_node {
 		uint64_t next_epoch_num;
