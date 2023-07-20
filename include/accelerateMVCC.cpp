@@ -4,11 +4,11 @@
 
 mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count)
 {
-	uint64_t max_value = std::numeric_limits<uint64_t>::max();
+	constexpr uint64_t max_value = ~0ULL;
 	// if you are willing to test large number of elements, you have to change table size : (1 << 10) + 1 to (1 << 16)
-	kuku_table = new kuku::KukuTable((1 << 10), (1 << 10), 2, kuku::make_random_item(), 100, kuku::make_item(max_value, max_value));
+	this->kuku_table = new kuku::KukuTable((1 << 10), (1 << 10), 2, kuku::make_random_item(), 100, kuku::make_item(max_value, max_value));
 	// kukuTable = new kuku::KukuTable((1 << 16), (1 << 10), 2, kuku::make_zero_item(), 100, kuku::make_random_item());
-	trxManger = new Trx_manager(record_count); 
+	this->trxManger = new Trx_manager(record_count); 
 
 	for (int i = 0; i < record_count; i++) {
 		kuku::item_type item = kuku::make_item(1,i);
@@ -93,6 +93,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 		return kuku_table->insert(item);
 	}
 
+	return false;
 }
 
 bool mvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
