@@ -74,6 +74,11 @@ namespace mvcc {
             };
         }
 
+        // TODO : when this function is called ??
+        // we need to separate 2 phase of gc processing
+        // Phase1 : send epoch_tables nodes to LLT vector
+        // <- (epoch_num - epoch_table_size/4)  ~ (epoch_num)
+        // Phase2 : processing gc in LLT vector
         bool garbage_collect(uint64_t epoch_num) {
             return false;
         }
