@@ -2,6 +2,7 @@
 #define dead0dead_h
 
 #include <shared_mutex>
+#include <cstring>
 #include "read0read.h"
 
 /* define */

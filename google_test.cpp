@@ -421,5 +421,5 @@ TEST(AccelerateTest, insert1) {
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         mvcc.insert(1,1,i,i,i,i);
     }
-
+    ASSERT_EQ(true, true);
 }

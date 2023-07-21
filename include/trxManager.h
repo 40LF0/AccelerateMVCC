@@ -10,7 +10,7 @@
 namespace mvcc {
 
     /**
-    The TrxManager class represents mimc version of transaction manager in DBMS
+    The TrxManager class represents mimic version of transaction manager in DBMS
     It should mange transaction id and classify which epoch is active or not.
     */
 

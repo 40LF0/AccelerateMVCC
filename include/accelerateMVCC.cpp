@@ -27,8 +27,6 @@ mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count) {
             std::cout << "record number : " << i << "is not inserted" << std::endl;
         }
     }
-
-
 }
 
 
