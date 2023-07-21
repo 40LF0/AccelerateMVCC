@@ -75,7 +75,7 @@ namespace mvcc {
         }
 
         bool garbage_collect(uint64_t epoch_num) {
-
+            return false;
         }
 
 
