@@ -49,7 +49,7 @@ namespace mvcc {
             epoch_table_node *table_node = table.at(index);
             table_node->count.fetch_add(1);
             if (epoch_num < table_node->epoch_num) { // NOLINT(bugprone-branch-clone)
-                // GC is already performeds
+                // GC is already performed
                 table_node->count.fetch_sub(1);
                 insert_to_dummy(epoch);
                 return false;
