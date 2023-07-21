@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <kuku/kuku.h>
+#include "include/accelerateMVCC.h"
 
 using namespace std;
 using namespace kuku;
@@ -407,8 +408,18 @@ TEST(KukuValueTest, location2) {
     ASSERT_EQ(get_value(ct.table(result1.location())), value1);
 
     QueryResult result2 = ct.query(make_item(0, 1));
+
+
     ASSERT_EQ(result2.found(), true);
     ASSERT_EQ(result2.in_stash(), true);
     ASSERT_EQ(get_value(ct.stash(result2.location())), value2);
+
+}
+
+TEST(AccelerateTest, insert1) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        mvcc.insert(1,1,i,i,i,i);
+    }
 
 }

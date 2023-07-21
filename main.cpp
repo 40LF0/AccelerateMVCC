@@ -72,6 +72,9 @@ int main() {
     trxManagerTest();
 
     mvcc::Accelerate_mvcc mvcc(10);
+    for(uint64_t i = 0 ; i < 10000 ; i ++){
+        mvcc.insert(1,1,i,i,i,i);
+    }
 
 
     return 0;

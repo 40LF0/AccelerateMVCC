@@ -17,7 +17,7 @@ mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count) {
         auto *header = new interval_list_header();
 
 
-        auto value = reinterpret_cast<std::uint64_t>(&header);
+        auto value = reinterpret_cast<std::uint64_t>(header);
 
         // we can get header address from value
         // interval_list_header* header = reinterpret_cast<interval_list_header*>(value);
@@ -50,14 +50,27 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
             item = kuku_table->table(query.location());
             value = kuku::get_value(item);
         }
-        auto *header = reinterpret_cast<interval_list_header *>(&value);
-        if (header->next_epoch_num < epoch_num) {
+        auto *header = reinterpret_cast<interval_list_header *>(value);
+        if (header->next.load() == nullptr) {
+            auto* epoch = new epoch_node();
+            update_epoch_node(epoch, epoch_num, trx_id, undo_entry, nullptr);
+
+            header->next_epoch_num = epoch_num;
+            header->next.store(epoch);
+        }
+        else if (header->next_epoch_num < epoch_num) {
             // create new epoch and insert it to header
 
             // concurrency control btw inserting and gc operation
             auto *epoch = new epoch_node();
             header->next.load()->prev.store(epoch);
-            update_epoch_node(epoch, epoch_num, trx_id, undo_entry, header->next.load());
+            try {
+                update_epoch_node(epoch, epoch_num, trx_id, undo_entry, header->next.load());
+            }
+            catch (std::exception& e) {
+                update_epoch_node(epoch, epoch_num, trx_id, undo_entry, nullptr);
+            }
+            
 
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
@@ -80,7 +93,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
         auto *header = new interval_list_header();
         header->next_epoch_num = epoch_num;
         header->next.store(epoch);
-        auto value = reinterpret_cast<std::uint64_t>(&header);
+        auto value = reinterpret_cast<std::uint64_t>(header);
 
         kuku::set_value(value, item);
 
@@ -115,7 +128,7 @@ bool mvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
     }
 
     //get address of header node of interval list
-    auto *header = reinterpret_cast<interval_list_header *>(&value);
+    auto *header = reinterpret_cast<interval_list_header *>(value);
 
 
     /*Phase 2 : get proper version with traversing epoch-based interval list*/
