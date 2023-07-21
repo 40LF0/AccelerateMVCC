@@ -85,7 +85,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
             if (trx_id > epoch->max_trx_id) {
                 epoch->max_trx_id = trx_id;
             }
-            undo_entry->next_entry.store(last_entry);
+            last_entry->next_entry.store(undo_entry);
             epoch->last_entry.store(undo_entry);
         }
     } else {
