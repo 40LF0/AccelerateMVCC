@@ -8,7 +8,7 @@
 #include <iostream>
 #include "trxManager.h"
 #include "kuku/kuku.h"
-#include "node.h"
+#include "interval_list.h"
 #include "common.h"
 #include "epoch_table.h"
 

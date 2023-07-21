@@ -14,13 +14,13 @@ mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count) {
         kuku::item_type item = kuku::make_item(1, i);
 
         // value is header node pointer address for epoch-based interval linked list
-        auto *header = new header_node();
+        auto *header = new interval_list_header();
 
 
         auto value = reinterpret_cast<std::uint64_t>(&header);
 
         // we can get header address from value
-        // header_node* header = reinterpret_cast<header_node*>(value);
+        // interval_list_header* header = reinterpret_cast<interval_list_header*>(value);
 
         kuku::set_value(value, item);
         if (!kuku_table->insert(item)) {
@@ -50,7 +50,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
             item = kuku_table->table(query.location());
             value = kuku::get_value(item);
         }
-        auto *header = reinterpret_cast<header_node *>(&value);
+        auto *header = reinterpret_cast<interval_list_header *>(&value);
         if (header->next_epoch_num < epoch_num) {
             // create new epoch and insert it to header
 
@@ -77,7 +77,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
         }
     } else {
         auto *epoch = new epoch_node(epoch_num, trx_id, undo_entry, nullptr);
-        auto *header = new header_node();
+        auto *header = new interval_list_header();
         header->next_epoch_num = epoch_num;
         header->next.store(epoch);
         auto value = reinterpret_cast<std::uint64_t>(&header);
@@ -115,7 +115,7 @@ bool mvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
     }
 
     //get address of header node of interval list
-    auto *header = reinterpret_cast<header_node *>(&value);
+    auto *header = reinterpret_cast<interval_list_header *>(&value);
 
 
     /*Phase 2 : get proper version with traversing epoch-based interval list*/
@@ -129,7 +129,7 @@ bool mvcc::Accelerate_mvcc::search(uint64_t table_id, uint64_t index,
             continue;
         } else {
             /*Phase 2-2 : traverse undo log entry node*/
-            undo_entry_node *undo_entry = epoch->fisrt_entry;
+            undo_entry_node *undo_entry = epoch->first_entry;
             while (undo_entry != nullptr) {
                 // transaction cannot see higher trx_id version than its trx_id
                 if (undo_entry->trx_id < trx_id) {

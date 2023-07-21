@@ -16,7 +16,7 @@ namespace mvcc {
 
     class Trx_manager {
     public:
-        Trx_manager(uint64_t record_count)
+        explicit Trx_manager(uint64_t record_count)
                 : next_trx_id(1), record_count(record_count), mutexes(record_count) {}
 
         uint64_t startTrx();

@@ -7,5 +7,6 @@
 #include <cstdint>
 
 #define EPOCH_SIZE 100
+#define EPOCH_TABLE_SIZE 100
 #endif /* common_h */
 

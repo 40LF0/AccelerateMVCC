@@ -29,7 +29,7 @@ namespace mvcc {
         std::atomic<UndoLogEntryNode *> endUndoLogEntry = nullptr;
         std::atomic<EpochNode *> nextEpoch = nullptr;
 
-        EpochNode(uint64_t epochNumber);
+        explicit EpochNode(uint64_t epochNumber);
     };
 
     struct undo_entry_node {
@@ -48,19 +48,19 @@ namespace mvcc {
         uint64_t min_trx_id;
         uint64_t max_trx_id;
         uint64_t count;
-        undo_entry_node *fisrt_entry;
+        undo_entry_node *first_entry;
         std::atomic<undo_entry_node *> last_entry;
         std::atomic<epoch_node *> prev;
         std::atomic<epoch_node *> next;
 
         epoch_node(uint64_t epoch_num, uint64_t trx_id, undo_entry_node *undo_entry, epoch_node *next)
                 : epoch_num(epoch_num), min_trx_id(trx_id), max_trx_id(trx_id), count(1),
-                  fisrt_entry(undo_entry), last_entry(undo_entry),
+                  first_entry(undo_entry), last_entry(undo_entry),
                   prev(nullptr), next(next) {}
 
         epoch_node()
                 : epoch_num(0), min_trx_id(0), max_trx_id(0), count(0),
-                  fisrt_entry(nullptr), last_entry(nullptr),
+                  first_entry(nullptr), last_entry(nullptr),
                   prev(nullptr), next(nullptr) {}
 
     };
@@ -68,11 +68,11 @@ namespace mvcc {
     void update_epoch_node(epoch_node *epoch, uint64_t epoch_num, uint64_t trx_id, undo_entry_node *undo_entry,
                            epoch_node *next);
 
-    struct header_node {
+    struct interval_list_header {
         uint64_t next_epoch_num;
         std::atomic<epoch_node *> next;
 
-        header_node()
+        interval_list_header()
                 : next_epoch_num(0), next(nullptr) {}
     };
 
