@@ -21,6 +21,8 @@ namespace mvcc {
         uint64_t epoch_num;
         std::atomic<epoch_node_wrapper *> first_node;
         std::atomic<epoch_node_wrapper *> last_node;
+
+        // watcher number for this node
         std::atomic<int> count;
 
         explicit epoch_table_node(uint64_t epoch_num)
@@ -81,17 +83,65 @@ namespace mvcc {
         // <- (epoch_num - epoch_table_size/4)  ~ (epoch_num)
         // Phase2 : processing gc in LLT vector
         bool garbage_collect(uint64_t epoch_num) {
-            // get index range to move elements from table to long_live_epochs
-            uint64_t start_index = (epoch_num - EPOCH_TABLE_SIZE / 2) / EPOCH_TABLE_SIZE;
-            uint64_t end_index = (epoch_num - EPOCH_TABLE_SIZE / 4 - 1) / EPOCH_TABLE_SIZE;
-            for (uint64_t i = start_index; i <= end_index; i++) {
-                epoch_table_node *prev_table_node = table.at(i).load();
-                long_live_epochs.emplace_back(prev_table_node);
-                auto *new_table_node = new epoch_table_node(prev_table_node->epoch_num + EPOCH_TABLE_SIZE);
-                table.at(i).store(new_table_node);
+
+            {
+                // get index range to move elements from table to long_live_epochs
+                uint64_t start_index = (epoch_num - EPOCH_TABLE_SIZE / 2) / EPOCH_TABLE_SIZE;
+                uint64_t end_index = (epoch_num - EPOCH_TABLE_SIZE / 4 - 1) / EPOCH_TABLE_SIZE;
+                for (uint64_t i = start_index; i <= end_index; i++) {
+                    epoch_table_node *prev_table_node = table.at(i).load();
+                    long_live_epochs.emplace_back(prev_table_node);
+                    auto *new_table_node = new epoch_table_node(prev_table_node->epoch_num + EPOCH_TABLE_SIZE);
+                    table.at(i).store(new_table_node);
+                }
             }
 
-            //get size of long_live_epochs and operate gc from (size - EPOCH_TABLE_SIZE / 2) to (size - EPOCH_TABLE_SIZE / 4 - 1)
+            {
+                //get size of long_live_epochs and operate gc from (size - EPOCH_TABLE_SIZE / 2) to (size - EPOCH_TABLE_SIZE / 4 - 1)
+                uint64_t llt_size = long_live_epochs.size();
+                uint64_t start_index = llt_size - (EPOCH_TABLE_SIZE / 2);
+                uint64_t end_index = llt_size - (EPOCH_TABLE_SIZE / 4) - 1;
+                for(uint64_t i = start_index;  i <= end_index; i++){
+                    epoch_table_node * table_node = long_live_epochs.at(i);
+
+                    epoch_node_wrapper *first_node = table_node->first_node.load();
+                    epoch_node_wrapper *last_node = table_node->last_node.load();
+
+                    if(table_node->count.load() != 0){
+                        // some thread trying to insert
+                        // you can gc other nodes BUT you should keep last node!
+                        // By leave one node for this table node, we can preserve consistency of inserting
+
+                        for(epoch_node_wrapper* node = first_node; node != last_node || node != nullptr ; node = node->next.load()){
+//                            if(operate_gc(node)){
+//
+//                            }
+//                            else{
+//
+//                            }
+                        }
+                    }
+                    else{
+                        // you can erase whole node and event table node itself!!
+
+                        for(epoch_node_wrapper* node = first_node; node != nullptr ; node = node->next.load()){
+//                            if(operate_gc(node)){
+//
+//                            }
+//                            else{
+//
+//                            }
+                        }
+
+                        if(first_node == nullptr && last_node == nullptr){
+                            // we can delete this table node from vector
+                        }
+                        else{
+                            //
+                        }
+                    }
+                }
+            }
 
             //if logic is completed, then change false to true
             return false;
