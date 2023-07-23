@@ -21,13 +21,6 @@ set(COMMON_SOURCES
   "include/interval_list.h"
   "include/interval_list.cpp"
   "include/common.h"
-  "include/dead0dead.h"
-  "include/read0read.h"
-  "include/read0types.h"
-  "include/ut0lst.h"
-  "include/dead0dead.cpp"
-  "include/read0read.cpp"
-  "include/read0types.cpp"
   "include/epoch_table.h"
   "include/epoch_table.cpp"
 )

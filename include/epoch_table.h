@@ -34,9 +34,9 @@ namespace mvcc {
         }
     };
 
-    class epoch_table {
+    class Epoch_table {
     public:
-        epoch_table() {
+        explicit Epoch_table() {
             for (int i = 0; i < EPOCH_TABLE_SIZE; i++) {
                 table.at(i).store(new epoch_table_node(i));
                 auto* wrapper_dummy = new epoch_node_wrapper(nullptr);

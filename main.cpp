@@ -9,8 +9,6 @@
 using namespace std;
 using namespace kuku;
 
-void trxManagerTest();
-
 
 void print_table(const KukuTable &table) {
     table_size_type col_count = 8;
@@ -69,22 +67,20 @@ int main() {
 
     cout << "Hello CMake." << endl;
 
-    trxManagerTest();
 
     mvcc::Accelerate_mvcc mvcc(10);
-    for(uint64_t i = 0 ; i < 10000 ; i ++){
+
+    clock_t start, finish;
+    double duration;
+    
+    start = clock();
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
         mvcc.insert(1,1,i,i,i,i);
     }
+    finish = clock();
+    duration = (double)(finish - start);
+    cout << duration << "ms" << endl;
 
 
     return 0;
-}
-
-void trxManagerTest() {
-    mvcc::Trx_manager trxManager = mvcc::Trx_manager(1);
-
-    cout << trxManager.startTrx() << endl;
-    cout << trxManager.startTrx() << endl;
-    cout << trxManager.startTrx() << endl;
-    cout << trxManager.startTrx() << endl;
 }

@@ -10,6 +10,8 @@ mvcc::Accelerate_mvcc::Accelerate_mvcc(uint64_t record_count) {
     // kukuTable = new kuku::KukuTable((1 << 16), (1 << 10), 2, kuku::make_zero_item(), 100, kuku::make_random_item());
     this->trxManger = new Trx_manager(record_count);
 
+    this->epoch_table = new Epoch_table();
+
     for (int i = 0; i < record_count; i++) {
         kuku::item_type item = kuku::make_item(1, i);
 
@@ -55,6 +57,8 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
+
+            //epoch_table->insert(epoch);
         }
         else if (header->next_epoch_num < epoch_num) {
             // create new epoch and insert it to header
@@ -72,6 +76,8 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
+
+            //epoch_table->insert(epoch);
         } else {
             // insert undo log entry to existing epoch
             epoch_node *epoch = header->next.load();
@@ -95,6 +101,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
         kuku::set_value(value, item);
 
+        //epoch_table->insert(epoch);
         return kuku_table->insert(item);
     }
 

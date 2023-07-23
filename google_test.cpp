@@ -416,10 +416,32 @@ TEST(KukuValueTest, location2) {
 
 }
 
-TEST(AccelerateTest, insert1) {
+TEST(AccelerateTest, initalize_accelerate_mvcc) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    ASSERT_EQ(true, true);
+}
+
+TEST(AccelerateTest, create_1M_dummy_read_transaction) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    for (uint64_t i = 0; i < 1000000; i++) {
+        mvcc.dummy_read_trx();
+    }
+    ASSERT_EQ(true, true);
+}
+
+TEST(AccelerateTest, inserting_1M_to_single_node_interval_list) {
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         mvcc.insert(1,1,i,i,i,i);
+    }
+    ASSERT_EQ(true, true);
+}
+
+TEST(AccelerateTest, inserting_1M_to_single_node_trx_manager) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        uint64_t index = i % 10;
+        mvcc.insert_trx(index);
     }
     ASSERT_EQ(true, true);
 }
