@@ -53,6 +53,17 @@ namespace mvcc
             release_mutex(index);
         }
 
+        void insert_trx_without_trx_manager(uint64_t trx_id, uint64_t index) {
+            // get write lock of the record
+            get_mutex(index);
+
+            // insert undo log entry to interval list
+            insert(1, index, trx_id, trx_id, trx_id, trx_id);
+
+            // release write lock
+            release_mutex(index);
+        }
+
         void dummy_read_trx() {
             auto* trx = start_trx();
             uint64_t trx_id = trx->trx_id;
