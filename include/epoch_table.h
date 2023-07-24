@@ -198,17 +198,25 @@ namespace mvcc {
         // <- (epoch_num - epoch_table_size/4)  ~ (epoch_num)
         // Phase2 : processing gc in LLT vector
         bool garbage_collect(uint64_t epoch_num, std::vector<trx_t> vector) {
-
+            if (epoch_num == EPOCH_TABLE_SIZE / 4) {
+                return false;
+            }
             {
                 // get index range to move elements from table to long_live_epochs
-                uint64_t start_index = (epoch_num - EPOCH_TABLE_SIZE / 2) / EPOCH_TABLE_SIZE;
-                uint64_t end_index = (epoch_num - EPOCH_TABLE_SIZE / 4 - 1) / EPOCH_TABLE_SIZE;
-                for (uint64_t i = start_index; i <= end_index; i++) {
+                uint64_t start_index = (epoch_num - EPOCH_TABLE_SIZE / 2) % EPOCH_TABLE_SIZE;
+                uint64_t end_index = ((epoch_num - EPOCH_TABLE_SIZE / 4) - 1) % EPOCH_TABLE_SIZE;
+
+                int i_start = static_cast<int>(start_index);
+                int i_end = static_cast<int>(end_index);
+                for (int i = i_start; i <= i_end; i++) {
                     epoch_table_node *prev_table_node = table.at(i).load();
                     long_live_epochs.push_back(prev_table_node);
-                    auto *new_table_node = new epoch_table_node(prev_table_node->epoch_num + EPOCH_TABLE_SIZE);
+                    auto *new_table_node = new epoch_table_node((prev_table_node->epoch_num) + EPOCH_TABLE_SIZE);
                     table.at(i).store(new_table_node);
                 }
+            }
+            if (epoch_num == EPOCH_TABLE_SIZE / 2) {
+                return false;
             }
             deadzone* deadzone = generate_dead_zone(vector);
             {
@@ -217,7 +225,10 @@ namespace mvcc {
                 uint64_t start_index = llt_size - (EPOCH_TABLE_SIZE / 2);
                 uint64_t end_index = llt_size - (EPOCH_TABLE_SIZE / 4) - 1;
                 std::vector<epoch_table_node *> deleteIndexes;
-                for(uint64_t i = start_index;  i <= end_index; i++){
+
+                int i_start = static_cast<int>(start_index);
+                int i_end = static_cast<int>(end_index);
+                for(int i = i_start;  i <= i_end; i++){
                     epoch_table_node * table_node = long_live_epochs.at(i);
 
                     epoch_node_wrapper *last_node = table_node->last_node.load();
@@ -227,21 +238,8 @@ namespace mvcc {
                         // you can gc other nodes BUT you should keep last node!
                         // By leave one node for this table node, we can preserve consistency of inserting
 
-                        for(epoch_node_wrapper* node = table_node->first_node.load(); node != last_node || node != nullptr;){
+                        for(epoch_node_wrapper* node = table_node->first_node.load()->next.load(); node != last_node || node != nullptr;){
                             if(can_operate_gc(node,deadzone)){
-                                if(node == table_node->first_node.load()){
-                                    table_node->first_node.store(node->next.load());
-                                    prev_node = node->next.load();
-
-                                    epoch_node *epochNode = node->epoch;
-                                    epochNode->prev.load()->next.store(epochNode->next.load());
-                                    delete epochNode;
-
-                                    epoch_node_wrapper* node1 = node;
-                                    node = node->next.load();
-                                    delete node1;
-                                }
-                                else{
                                     prev_node->next = node->next.load();
 
                                     epoch_node *epochNode = node->epoch;
@@ -251,8 +249,6 @@ namespace mvcc {
                                     epoch_node_wrapper* node1 = node;
                                     node = node->next.load();
                                     delete node1;
-
-                                }
                             }
                             else{
                                 node = node->next.load();
@@ -262,21 +258,8 @@ namespace mvcc {
                     else{
                         // you can erase whole node and event table node itself!!
 
-                        for(epoch_node_wrapper* node = table_node->first_node.load(); node != nullptr ; node = node->next.load()){
+                        for(epoch_node_wrapper* node = table_node->first_node.load()->next.load(); node != nullptr ; node = node->next.load()){
                             if(can_operate_gc(node,deadzone)){
-                                if(node == table_node->first_node.load()){
-                                    table_node->first_node.store(node->next.load());
-                                    prev_node = node->next.load();
-
-                                    epoch_node *epochNode = node->epoch;
-                                    epochNode->prev.load()->next.store(epochNode->next.load());
-                                    delete epochNode;
-
-                                    epoch_node_wrapper* node1 = node;
-                                    node = node->next.load();
-                                    delete node1;
-                                }
-                                else{
                                     prev_node->next = node->next.load();
 
                                     epoch_node *epochNode = node->epoch;
@@ -286,15 +269,14 @@ namespace mvcc {
                                     epoch_node_wrapper* node1 = node;
                                     node = node->next.load();
                                     delete node1;
-
-                                }
                             }
                             else{
                                 node = node->next.load();
                             }
                         }
 
-                        if(table_node->first_node.load() == nullptr && last_node == nullptr){
+                        if(table_node->first_node.load() == last_node){
+                            delete table_node->first_node.load();
                             deleteIndexes.push_back(table_node);
                         }
                     }
