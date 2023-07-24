@@ -431,7 +431,7 @@ TEST(AccelerateTest, create_1M_dummy_read_transaction) {
 
 TEST(AccelerateTest_record_1, inserting_1M_to_vector) {
     mvcc::Accelerate_mvcc mvcc(10);
-    std::vector<int> vec;
+    std::vector<uint64_t> vec;
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         uint64_t index = 1;
         vec.emplace_back(index);
@@ -462,6 +462,15 @@ TEST(AccelerateTest_record_1, inserting_1M_to_single_node_interval_list_with_loc
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         uint64_t index = 1;
+        mvcc.insert_trx_without_gc(index);
+    }
+    ASSERT_EQ(true, true);
+}
+
+TEST(AccelerateTest_record_1, inserting_1M_to_single_node_interval_list_with_lock_with_trx_manager_with_gc) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        uint64_t index = 1;
         mvcc.insert_trx(index);
     }
     ASSERT_EQ(true, true);
@@ -485,8 +494,16 @@ TEST(AccelerateTest_record_10, inserting_1M_to_single_node_interval_list_with_lo
     ASSERT_EQ(true, true);
 }
 
-
 TEST(AccelerateTest_record_10, inserting_1M_to_single_node_interval_list_with_lock_with_trx_manager) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        uint64_t index = i%10;
+        mvcc.insert_trx_without_gc(index);
+    }
+    ASSERT_EQ(true, true);
+}
+
+TEST(AccelerateTest_record_10, inserting_1M_to_single_node_interval_list_with_lock_with_trx_manager_with_gc) {
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         uint64_t index = i%10;

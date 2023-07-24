@@ -40,6 +40,27 @@ namespace mvcc
             auto *trx = start_write_trx();
             uint64_t trx_id = trx->trx_id;
 
+            if(trx_id % (EPOCH_SIZE*EPOCH_TABLE_SIZE/4) == 0){
+                epoch_table->garbage_collect(get_epoch_num(trx_id), trxManger->get_copy_active_trx_list());
+            }
+
+            // get write lock of the record
+            get_mutex(index);
+
+            // insert undo log entry to interval list
+            insert(1,index,trx_id,trx_id,trx_id,trx_id);
+
+            // commit transaction
+            commit_trx(trx);
+
+            // release write lock
+            release_mutex(index);
+        }
+         void insert_trx_without_gc(uint64_t index){
+            // start transaction
+            auto *trx = start_write_trx();
+            uint64_t trx_id = trx->trx_id;
+
             // get write lock of the record
             get_mutex(index);
 
@@ -67,6 +88,9 @@ namespace mvcc
         void dummy_read_trx() {
             auto* trx = start_trx();
             uint64_t trx_id = trx->trx_id;
+            if(trx_id % (EPOCH_SIZE*EPOCH_TABLE_SIZE/4) == 0){
+                epoch_table->garbage_collect(get_epoch_num(trx_id), trxManger->get_copy_active_trx_list());
+            }
             commit_trx(trx);
         }
 
@@ -101,12 +125,7 @@ namespace mvcc
         void release_mutex(uint64_t index){
             trxManger->release_mutex(index);
         }
-
-        void operate_gc(){
-            uint64_t trx_id = trxManger->get_next_trx_id() - 1;
-            epoch_table->garbage_collect(get_epoch_num(trx_id));
-        }
-
+        
 
     private:
         /**

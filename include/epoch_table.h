@@ -2,10 +2,16 @@
 #define epoch_table_h
 
 #include <array>
+#include <utility>
 #include <vector>
 #include <atomic>
+#include <cstring>
+#include <algorithm>
 #include "common.h"
 #include "interval_list.h"
+#include "trxManager.h"
+
+#define NUM_DEADZONE (50)
 
 namespace mvcc {
 
@@ -76,13 +82,122 @@ namespace mvcc {
             };
         }
 
-        // TODO : when this function is called ?? - every 25(EPOCH_TABLE_SIZE/4) times! 50, 75, 100 …
+        struct deadzone {
+            deadzone(std::vector<trx_t> oldest_active_trx_list, uint64_t oldest_low_limit_id) : len(0) {
+                memset(range, 0x00, sizeof(uint64_t) * NUM_DEADZONE * 2);
+                this->oldest_active_trx_list = oldest_active_trx_list;
+            }
+
+            uint64_t range[2 * NUM_DEADZONE]{};
+            uint64_t  oldest_low_limit_id;
+            uint64_t len;
+            std::vector<trx_t> oldest_active_trx_list;
+
+        };
+
+
+        uint64_t get_dead_up_limit_id(uint64_t limit_id, const std::vector<trx_t> &vector, const uint64_t trx_id) const {
+
+            for (uint64_t i = 0; i < vector.size(); ++i) {
+                if (vector.at(i).trx_id > limit_id) {
+                    return (vector.at(i).trx_id);
+                }
+            }
+
+            return trx_id;
+        }
+
+        /**
+        update dead zone */
+        deadzone* generate_dead_zone(const std::vector<trx_t>& vector) {
+
+            uint64_t oldest_low_limit_id;
+
+            if(vector.at(0).active_trx_list.empty()){
+                oldest_low_limit_id = vector.at(0).trx_id;
+            }else{
+                oldest_low_limit_id = vector.at(0).active_trx_list.at(0).trx_id;
+            }
+            /* 1. Get free deadzone structure */
+            auto* zone = new deadzone(vector.at(0).active_trx_list,oldest_low_limit_id);
+
+            /* 2. Update "zone 1" */
+            zone->range[0] = 0;
+            zone->range[1] = oldest_low_limit_id;
+            zone->len = 1;
+
+            uint64_t low_limit_id;
+            uint64_t dead_up_limit_id;
+            /* 3. Update other deadzone */
+            for (uint64_t i = 1; i < vector.size(); ++i) {
+                low_limit_id = vector.at(i - 1).trx_id;
+                dead_up_limit_id = get_dead_up_limit_id(low_limit_id, vector.at(i).active_trx_list,
+                                                        vector.at(i).trx_id);
+
+                zone->range[2 * zone->len] = low_limit_id;
+                zone->range[2 * zone->len + 1] = dead_up_limit_id;
+                zone->len++;
+            }
+            return zone;
+        }
+
+        bool can_pruning(uint64_t v_start, uint64_t v_end , deadzone* zone) {
+            bool ret = false;
+            bool flag = true;
+
+
+            /* compare its v_start & v_end to deadzone */
+            for (uint64_t i = 0; i < zone->len; ++i) {
+                if (i == 0 && zone->oldest_active_trx_list.size() != 0) {
+                    if (v_end < zone->range[1]) {
+                        ret = true;
+                        break;
+                    }
+                    else if (v_end >= zone->oldest_low_limit_id) {
+                        continue;
+                    }
+
+                    for (int j = 0; j < zone->oldest_active_trx_list.size(); ++j) {
+                        if (zone->oldest_active_trx_list.at(j).trx_id == v_end) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        ret = true;
+                        break;
+                    }
+                }
+                else {
+                    if (zone->range[2 * i] < v_start &&
+                        v_end < zone->range[2 * i + 1]) {
+
+                        ret = true;
+                        break;
+                    }
+                }
+            }
+
+            return (ret);
+        }
+
+        bool can_operate_gc(epoch_node_wrapper *epoch_wrapper, deadzone *deadzone) {
+            uint64_t epoch_num = epoch_wrapper->epoch->epoch_num;
+            uint64_t v_start  = epoch_num * EPOCH_SIZE;
+            uint64_t v_end = ((epoch_num + 1) * EPOCH_SIZE) - 1;
+            if(can_pruning(v_start,v_end,deadzone)){
+                return true;
+            }
+            return false;
+        }
+
+// TODO : when this function is called ?? - every 25(EPOCH_TABLE_SIZE/4) times! 50, 75, 100 …
         //  -> do not start at 25!
         // we need to separate 2 phase of gc processing
         // Phase1 : send epoch_tables nodes to LLT vector
         // <- (epoch_num - epoch_table_size/4)  ~ (epoch_num)
         // Phase2 : processing gc in LLT vector
-        bool garbage_collect(uint64_t epoch_num) {
+        bool garbage_collect(uint64_t epoch_num, std::vector<trx_t> vector) {
 
             {
                 // get index range to move elements from table to long_live_epochs
@@ -90,59 +205,111 @@ namespace mvcc {
                 uint64_t end_index = (epoch_num - EPOCH_TABLE_SIZE / 4 - 1) / EPOCH_TABLE_SIZE;
                 for (uint64_t i = start_index; i <= end_index; i++) {
                     epoch_table_node *prev_table_node = table.at(i).load();
-                    long_live_epochs.emplace_back(prev_table_node);
+                    long_live_epochs.push_back(prev_table_node);
                     auto *new_table_node = new epoch_table_node(prev_table_node->epoch_num + EPOCH_TABLE_SIZE);
                     table.at(i).store(new_table_node);
                 }
             }
-
+            deadzone* deadzone = generate_dead_zone(vector);
             {
                 //get size of long_live_epochs and operate gc from (size - EPOCH_TABLE_SIZE / 2) to (size - EPOCH_TABLE_SIZE / 4 - 1)
                 uint64_t llt_size = long_live_epochs.size();
                 uint64_t start_index = llt_size - (EPOCH_TABLE_SIZE / 2);
                 uint64_t end_index = llt_size - (EPOCH_TABLE_SIZE / 4) - 1;
+                std::vector<epoch_table_node *> deleteIndexes;
                 for(uint64_t i = start_index;  i <= end_index; i++){
                     epoch_table_node * table_node = long_live_epochs.at(i);
 
-                    epoch_node_wrapper *first_node = table_node->first_node.load();
                     epoch_node_wrapper *last_node = table_node->last_node.load();
-
+                    epoch_node_wrapper *prev_node = table_node->first_node.load();
                     if(table_node->count.load() != 0){
                         // some thread trying to insert
                         // you can gc other nodes BUT you should keep last node!
                         // By leave one node for this table node, we can preserve consistency of inserting
 
-                        for(epoch_node_wrapper* node = first_node; node != last_node || node != nullptr ; node = node->next.load()){
-//                            if(operate_gc(node)){
-//
-//                            }
-//                            else{
-//
-//                            }
+                        for(epoch_node_wrapper* node = table_node->first_node.load(); node != last_node || node != nullptr;){
+                            if(can_operate_gc(node,deadzone)){
+                                if(node == table_node->first_node.load()){
+                                    table_node->first_node.store(node->next.load());
+                                    prev_node = node->next.load();
+
+                                    epoch_node *epochNode = node->epoch;
+                                    epochNode->prev.load()->next.store(epochNode->next.load());
+                                    delete epochNode;
+
+                                    epoch_node_wrapper* node1 = node;
+                                    node = node->next.load();
+                                    delete node1;
+                                }
+                                else{
+                                    prev_node->next = node->next.load();
+
+                                    epoch_node *epochNode = node->epoch;
+                                    epochNode->prev.load()->next.store(epochNode->next.load());
+                                    delete epochNode;
+
+                                    epoch_node_wrapper* node1 = node;
+                                    node = node->next.load();
+                                    delete node1;
+
+                                }
+                            }
+                            else{
+                                node = node->next.load();
+                            }
                         }
                     }
                     else{
                         // you can erase whole node and event table node itself!!
 
-                        for(epoch_node_wrapper* node = first_node; node != nullptr ; node = node->next.load()){
-//                            if(operate_gc(node)){
-//
-//                            }
-//                            else{
-//
-//                            }
+                        for(epoch_node_wrapper* node = table_node->first_node.load(); node != nullptr ; node = node->next.load()){
+                            if(can_operate_gc(node,deadzone)){
+                                if(node == table_node->first_node.load()){
+                                    table_node->first_node.store(node->next.load());
+                                    prev_node = node->next.load();
+
+                                    epoch_node *epochNode = node->epoch;
+                                    epochNode->prev.load()->next.store(epochNode->next.load());
+                                    delete epochNode;
+
+                                    epoch_node_wrapper* node1 = node;
+                                    node = node->next.load();
+                                    delete node1;
+                                }
+                                else{
+                                    prev_node->next = node->next.load();
+
+                                    epoch_node *epochNode = node->epoch;
+                                    epochNode->prev.load()->next.store(epochNode->next.load());
+                                    delete epochNode;
+
+                                    epoch_node_wrapper* node1 = node;
+                                    node = node->next.load();
+                                    delete node1;
+
+                                }
+                            }
+                            else{
+                                node = node->next.load();
+                            }
                         }
 
-                        if(first_node == nullptr && last_node == nullptr){
-                            // we can delete this table node from vector
-                        }
-                        else{
-                            //
+                        if(table_node->first_node.load() == nullptr && last_node == nullptr){
+                            deleteIndexes.push_back(table_node);
                         }
                     }
                 }
+
+                for(epoch_table_node* node : deleteIndexes){
+                    auto it = std::find(long_live_epochs.begin(), long_live_epochs.end(), node);
+                    if (it != long_live_epochs.end()) {
+                        long_live_epochs.erase(it);
+                    }
+                    delete node;
+                }
             }
 
+            delete deadzone;
             //if logic is completed, then change false to true
             return false;
         }
