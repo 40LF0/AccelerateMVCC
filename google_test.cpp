@@ -429,6 +429,16 @@ TEST(AccelerateTest, create_1M_dummy_read_transaction) {
     ASSERT_EQ(true, true);
 }
 
+TEST(AccelerateTest_record_1, inserting_1M_to_vector) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    std::vector<int> vec;
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        uint64_t index = 1;
+        vec.emplace_back(index);
+    }
+    ASSERT_EQ(true, true);
+}
+
 TEST(AccelerateTest_record_1, inserting_1M_to_single_node_interval_list) {
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
