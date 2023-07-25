@@ -15,8 +15,7 @@ namespace acmvcc{
 		uint64_t pageId;
 		uint64_t offset;
 
-		// std::atomic<UndoLogEntryNode*> nextUndoLogEntry = nullptr;
-		UndoLogEntryNode* next = nullptr;
+		std::atomic<UndoLogEntryNode*> nextUndoLogEntry = nullptr;
 
 		UndoLogEntryNode(uint64_t trxId, uint64_t spaceId ,uint64_t pageId,uint64_t offset);
 	};
@@ -26,16 +25,13 @@ namespace acmvcc{
 
 		uint64_t epochNumber;
 
-		// std::atomic<UndoLogEntryNode*> startUndoLogEntry = nullptr;
-		// std::atomic<UndoLogEntryNode*> endUndoLogEntry = nullptr;
-		// std::atomic<EpochNode*> nextEpoch = nullptr;
-		UndoLogEntryNode* undoLogEntry = nullptr;
-		EpochNode* next = nullptr;
-		EpochNode* backlink = nullptr;
+		std::atomic<UndoLogEntryNode*> startUndoLogEntry = nullptr;
+		std::atomic<UndoLogEntryNode*> endUndoLogEntry = nullptr;
+		std::atomic<EpochNode*> nextEpoch = nullptr;
 
 		EpochNode(uint64_t epochNumber);
 	};
 
-	UndoLogEntryNode* search(uint64_t trxId, EpochNode *head);
-	int insert(uint64_t trxId, uint64_t spaceId, uint64_t pageId, uint64_t offset, EpochNode *head);
+
+
 } // namespace acmvcc
