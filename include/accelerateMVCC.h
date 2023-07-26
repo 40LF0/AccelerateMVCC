@@ -94,6 +94,28 @@ namespace mvcc
             commit_trx(trx);
         }
 
+        trx_t* start_read_trx() {
+            auto* trx = start_trx();
+            uint64_t trx_id = trx->trx_id;
+            if(trx_id % (EPOCH_SIZE*EPOCH_TABLE_SIZE/4) == 0){
+                epoch_table->garbage_collect(get_epoch_num(trx_id), trxManger->get_copy_active_trx_list());
+            }
+
+            return trx;
+        }
+
+        bool search_operation(uint64_t table_id, uint64_t index, trx_t *trx, uint64_t &space_id, uint64_t &page_id, uint64_t &offset) {
+            std::vector<uint64_t> active_trx_list;
+            for (auto i: trx->active_trx_list) {
+                active_trx_list.emplace_back(i.trx_id);
+            }
+            return search(table_id, index, trx->trx_id, space_id, page_id, offset, active_trx_list);
+        }
+
+        void end_read_trx(trx_t* trx){
+            commit_trx(trx);
+        }
+
         // insert undo log entry to interval list
         bool insert(uint64_t table_id, uint64_t index, uint64_t trx_id, uint64_t space_id, uint64_t page_id, uint64_t offset);
 
