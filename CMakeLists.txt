@@ -1,6 +1,6 @@
 ﻿# CMakeList.txt : CMake project for AccelerateMVCC, include source and define
 # project specific logic here.
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.1Threads::Threads4)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -8,9 +8,10 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-# GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 project ("AccelerateMVCC")
 # Common source files
@@ -30,6 +31,7 @@ add_executable (AccelerateMVCC
   ${COMMON_SOURCES}
  )
 
+ find_package(Threads REQUIRED)
 
 # Add the directory containing kuku/kuku.h and kuku/common.h to the include directories
 target_include_directories(AccelerateMVCC
@@ -43,6 +45,7 @@ endif()
 # Link the kuku.lib library
 target_link_libraries(AccelerateMVCC
   ${CMAKE_CURRENT_SOURCE_DIR}/Kuku/build/lib/Debug/kuku-2.1.lib
+  Threads::Threads
 )
 
 # TODO: Add tests and install targets if needed.
@@ -79,6 +82,7 @@ target_link_libraries(test_with_google
 target_link_libraries(
   test_with_google
   GTest::gtest_main
+  Threads::Threads
 )
 
 include(GoogleTest)

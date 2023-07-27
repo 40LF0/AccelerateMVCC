@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <kuku/kuku.h>
+#include <thread>
 #include "include/accelerateMVCC.h"
 
 using namespace std;
@@ -439,6 +440,19 @@ TEST(AccelerateTest_record_1, inserting_1M_to_vector) {
     ASSERT_EQ(true, true);
 }
 
+TEST(AccelerateTest_record_1, inserting_1M_to_vector_with_lock) {
+    mvcc::Accelerate_mvcc mvcc(10);
+    std::vector<uint64_t> vec;
+    std::mutex mutex;
+    for(uint64_t i = 0 ; i < 1000000 ; i ++){
+        mutex.lock();
+        uint64_t index = 1;
+        vec.emplace_back(index);
+        mutex.unlock();
+    }
+    ASSERT_EQ(true, true);
+}
+
 TEST(AccelerateTest_record_1, inserting_1M_to_single_node_interval_list) {
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
@@ -452,7 +466,7 @@ TEST(AccelerateTest_record_1, inserting_1M_to_single_node_interval_list_with_loc
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         uint64_t index = 1;
-        mvcc.insert_trx_without_trx_manager(i, index);
+        mvcc.insert_trx_without_trx_manager(1);
     }
     ASSERT_EQ(true, true);
 }
@@ -489,7 +503,7 @@ TEST(AccelerateTest_record_10, inserting_1M_to_single_node_interval_list_with_lo
     mvcc::Accelerate_mvcc mvcc(10);
     for(uint64_t i = 0 ; i < 1000000 ; i ++){
         uint64_t index = i%10;
-        mvcc.insert_trx_without_trx_manager(i, index);
+        mvcc.insert_trx_without_trx_manager(index);
     }
     ASSERT_EQ(true, true);
 }
@@ -512,4 +526,180 @@ TEST(AccelerateTest_record_10, inserting_1M_to_single_node_interval_list_with_lo
     ASSERT_EQ(true, true);
 }
 
+void insertToVectorThreadFunction(std::vector<uint64_t> &vector, std::mutex &mutex, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        std::lock_guard<std::mutex> lock(mutex);
+        vector.emplace_back(i);
+    }
+}
 
+TEST(AccelerateTest_record_1, inserting_1M_with_multi_thread_10_vector) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    std::vector<uint64_t> vec;
+    std::mutex mutex;
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToVectorThreadFunction, std::ref(vec), std::ref(mutex), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    ASSERT_EQ(vec.size(), transactions);
+}
+
+void insertToVectorWithListThreadFunction(std::vector<std::vector<uint64_t>> &vector, std::vector<std::mutex> &mutex, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        uint64_t index = i % 10;
+        std::lock_guard<std::mutex> lock(mutex.at(index));
+        vector.at(index).emplace_back(i);
+    }
+}
+
+TEST(AccelerateTest_record_10, inserting_1M_with_multi_thread_10_vector) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    std::vector<std::vector<uint64_t>> vec(10);
+    std::vector<std::mutex> mutex(10);
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToVectorWithListThreadFunction, std::ref(vec), std::ref(mutex), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    int size = 0;
+    for(int i = 0 ; i < vec.size() ; i++){
+        size = size + vec.at(i).size();
+    }
+    ASSERT_EQ(size, transactions);
+}
+
+
+void insertToOneMvccThreadFunction(mvcc::Accelerate_mvcc& mvcc, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        uint64_t index = 1;
+        mvcc.insert_trx_without_trx_manager(index);
+    }
+}
+TEST(AccelerateTest_record_1, inserting_1M_with_multi_thread_10) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToOneMvccThreadFunction, std::ref(mvcc), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    ASSERT_EQ(true, true);
+}
+
+void insertToMvccThreadFunction(mvcc::Accelerate_mvcc& mvcc, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        uint64_t index = i % 10;
+        mvcc.insert_trx_without_trx_manager(index);
+    }
+}
+TEST(AccelerateTest_record_10, inserting_1M_with_multi_thread_10) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToMvccThreadFunction, std::ref(mvcc), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    ASSERT_EQ(true, true);
+}
+
+//
+
+void insertToOneMvccThreadFunction_trx(mvcc::Accelerate_mvcc& mvcc, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        uint64_t index = 1;
+        mvcc.insert_trx(index);
+    }
+}
+TEST(AccelerateTest_record_1, inserting_1M_with_multi_thread_10_trx) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToOneMvccThreadFunction_trx, std::ref(mvcc), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    ASSERT_EQ(true, true);
+}
+
+void insertToMvccThreadFunction_trx(mvcc::Accelerate_mvcc& mvcc, uint64_t start, uint64_t end) {
+    for (uint64_t i = start; i < end; i++) {
+        uint64_t index = i % 10;
+        mvcc.insert_trx(index);
+    }
+}
+TEST(AccelerateTest_record_10, inserting_1M_with_multi_thread_10_trx) {
+    mvcc::Accelerate_mvcc mvcc(10);
+
+    uint64_t transactions = 1000000;
+    uint64_t threads = 10;
+    uint64_t transactionsPerThread = transactions / threads;
+
+    std::vector<std::thread> threadPool;
+
+    for (uint64_t i = 0; i < threads; i++) {
+        uint64_t start = i * transactionsPerThread;
+        uint64_t end = (i == threads - 1) ? transactions : start + transactionsPerThread;
+        threadPool.emplace_back(insertToMvccThreadFunction_trx, std::ref(mvcc), start, end);
+    }
+
+    for (auto& thread : threadPool) {
+        thread.join();
+    }
+    ASSERT_EQ(true, true);
+}

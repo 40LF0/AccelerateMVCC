@@ -62,8 +62,8 @@ namespace mvcc {
             return trx;
         }
 
-        bool get_mutex(uint64_t index) {
-            return mutexes.at(index)->try_lock();
+        void get_mutex(uint64_t index) {
+            return mutexes.at(index)->lock();
         }
 
         void release_mutex(uint64_t index) {
@@ -95,6 +95,10 @@ namespace mvcc {
 
         void trx_sys_mutex_enter(){
             trx_sys_mutex.enter();
+        }
+
+        uint64_t generate_trx_id(){
+            return next_trx_id.fetch_add(1);
         }
 
     private:

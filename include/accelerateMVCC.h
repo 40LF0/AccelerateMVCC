@@ -74,7 +74,8 @@ namespace mvcc
             release_mutex(index);
         }
 
-        void insert_trx_without_trx_manager(uint64_t trx_id, uint64_t index) {
+        void insert_trx_without_trx_manager(uint64_t index) {
+            uint64_t trx_id = trxManger->generate_trx_id();
             // get write lock of the record
             get_mutex(index);
 
