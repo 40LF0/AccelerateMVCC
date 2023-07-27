@@ -1,10 +1,12 @@
 // Licensed under the MIT license.
 #pragma once
 
-#include <cstdint>
-namespace acmvcc
-{
-	uint64_t EPOCH_SIZE = 5;
+#ifndef common_h
+#define common_h
 
-} // namespace acmvcc
+#include <cstdint>
+
+#define EPOCH_SIZE 100
+#define EPOCH_TABLE_SIZE 100
+#endif /* common_h */
 
