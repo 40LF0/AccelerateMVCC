@@ -58,7 +58,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
 
-            //epoch_table->insert(epoch);
+            epoch_table->insert(epoch);
         }
         else if (header->next_epoch_num < epoch_num) {
             // create new epoch and insert it to header
@@ -77,7 +77,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
 
-            //epoch_table->insert(epoch);
+            epoch_table->insert(epoch);
         } else {
             // insert undo log entry to existing epoch
             epoch_node *epoch = header->next.load();
@@ -101,7 +101,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
         kuku::set_value(value, item);
 
-        //epoch_table->insert(epoch);
+        epoch_table->insert(epoch);
         return kuku_table->insert(item);
     }
 

@@ -53,7 +53,7 @@ namespace mvcc {
 
         bool insert(epoch_node *epoch) {
             uint64_t epoch_num = epoch->epoch_num;
-            uint64_t index = epoch_num / EPOCH_TABLE_SIZE;
+            uint64_t index = epoch_num % EPOCH_TABLE_SIZE;
             epoch_table_node *table_node = table.at(index).load();
             table_node->count.fetch_add(1);
             if (epoch_num < table_node->epoch_num) { // NOLINT(bugprone-branch-clone)
