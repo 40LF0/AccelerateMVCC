@@ -65,7 +65,7 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
 
             // concurrency control btw inserting and gc operation
             auto *epoch = new epoch_node();
-
+            header->next.load()->prev.store(epoch);
             try {
                 update_epoch_node(epoch, epoch_num, trx_id, undo_entry, header->next.load());
             }
@@ -73,7 +73,6 @@ bool mvcc::Accelerate_mvcc::insert(uint64_t table_id, uint64_t index,
                 update_epoch_node(epoch, epoch_num, trx_id, undo_entry, nullptr);
             }
 
-            header->next.load()->prev.store(epoch);
             header->next_epoch_num = epoch_num;
             header->next.store(epoch);
 
